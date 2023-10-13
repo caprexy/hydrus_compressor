@@ -1,9 +1,70 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout
 
+import requests
+
+import constants
 from models.user_model import UserInfo
+import json
 
 userInfo = UserInfo()
+
+def warning(reason:str):
+    warning_window = QDialog()
+    warning_window.setWindowTitle("Warning!!!!!")
+    warning_window_layout = QVBoxLayout()
+    warning_window.setLayout(warning_window_layout)
+
+
+    hydrus_key_label = QLabel(reason)
+    warning_window_layout.addWidget(hydrus_key_label)
+
+    close_button = QPushButton('Close', warning_window)
+    close_button.clicked.connect(warning_window.accept)
+    warning_window_layout.addWidget(close_button)
+    
+    warning_window.exec()
+
+def get_files(
+        max_file_size: int,
+        size_type: str,
+        get_imgs: bool,
+        get_vids: bool,
+        get_inbox : bool, 
+        get_archive : bool,
+):
+
+    hydrus_key, api_port = userInfo.get_user_info()
+    print(hydrus_key, api_port)
+    if hydrus_key == None or api_port == None:
+        warning("Missing either api port or hydrus key!")
+        return    
+
+    tags_list = [
+            "system:filesize > "+str(max_file_size) + " "+ size_type,
+            ]
+    
+    if get_imgs:
+        tags_list.append("system:filetype is image")
+    if get_vids:
+        tags_list.append("system:filetype is video")
+    if not get_imgs and not get_vids:
+        warning("Did not select any media to get")
+        return
+    if not get_inbox and not get_archive:
+        warning("Did not select inbox or archive")
+        return
+
+    res = requests.get(
+        url=constants.LOCALHOST+str(api_port)+"/get_files/search_files",
+        headers={
+            constants.HYDRUS_APIKEY_PARAM : hydrus_key,
+        },
+        params={
+            "tags" : json.dumps(tags_list)
+        }
+    )
+    print(res.json())
 
 def open_config_menu():
     config_window = QDialog()

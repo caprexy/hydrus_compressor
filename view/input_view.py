@@ -1,7 +1,7 @@
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton
-from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QCheckBox, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton
+from PyQt6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QPushButton, QSpinBox, QVBoxLayout
 
 import controller.input_controller as input_controller
 
@@ -14,23 +14,50 @@ class InputWindow(QWidget):
         self.setLayout(input_layout)
 
         
-        self.input_box = QLineEdit()
-        add_button = QPushButton("Add Item")
-
-        add_button.clicked.connect(self.add_item)
-
-        input_layout.addWidget(self.input_box)
-        input_layout.addWidget(add_button)
+        get_files_button = QPushButton("Get all files following the conditions below")
+        input_layout.addWidget(get_files_button)
         
+        conditions_layout = QHBoxLayout()
+        file_size_explain_label = QLabel("Compress if greater than: ")
+        conditions_layout.addWidget(file_size_explain_label)
+        file_number_box = QSpinBox()
+        file_number_box.setValue(10)
+        conditions_layout.addWidget(file_number_box)
+        size_type_box = QComboBox()
+        size_type_box.addItem("MB")
+        size_type_box.addItem("GB")
+        conditions_layout.addWidget(size_type_box)
+        input_layout.addLayout(conditions_layout)
+
+        checkbox_layout = QHBoxLayout()
+        file_size_explain_label = QLabel("Compress if greater than: ")
+        img_checkbox = QCheckBox('Images')
+        img_checkbox.setChecked(True)
+        checkbox_layout.addWidget(img_checkbox)
+        vid_checkbox = QCheckBox('Videos')
+        vid_checkbox.setChecked(False)
+        checkbox_layout.addWidget(vid_checkbox)
+        archive_checkbox = QCheckBox('Archive')
+        archive_checkbox.setChecked(True)
+        checkbox_layout.addWidget(archive_checkbox)
+        inbox_checkbox = QCheckBox('Inbox')
+        inbox_checkbox.setChecked(False)
+        checkbox_layout.addWidget(inbox_checkbox)
+        input_layout.addLayout(checkbox_layout)
+        
+        get_files_button.clicked.connect( lambda:
+            input_controller.get_files(
+                file_number_box.value(),
+                size_type_box.currentText(),
+                img_checkbox.isChecked(),
+                vid_checkbox.isChecked(),
+                archive_checkbox.isChecked(),
+                inbox_checkbox.isChecked()
+            ))
+
         config_button = QPushButton("Open config")
         config_button.clicked.connect(input_controller.open_config_menu)
         input_layout.addWidget(config_button)
     
-    def add_item(self):
-        text = self.input_box.text()
-        if text:
-            self.output_window.addItem(text)
-            self.input_box.clear()
-
     def pass_output_window(self, output_window: QWidget):
         self.output_window = output_window
