@@ -1,35 +1,49 @@
-import time
+import sys
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton
+
+from view import input_view, output_view
 
 #origin source
 # https://upload.wikimedia.org/wikipedia/commons/7/74/%22I_Got_an_Idea%5E_If_it%27s_Good...I%27ll_Cash_In%22_-_NARA_-_514560_-_retouched.jpg
 # https://commons.wikimedia.org/wiki/Category:Large_images 
 
-import cv2
 
 
-start_time = time.perf_counter()
-img = cv2.imread('origin.jpg')
-end_time = time.perf_counter()
-execution_time = end_time - start_time
-print(f"CV2 READ: Execution time: {execution_time:.4f} seconds")
+# from PIL import Image
 
+# image = Image.open("origin.jpg")
 
-start_time = time.perf_counter()
-cv2.imwrite('cv2_origin.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 85])
-end_time = time.perf_counter()
-execution_time = end_time - start_time
-print(f"CV2 COMPRESS: Execution time: {execution_time:.4f} seconds")
+# # Compress and save the image
 
-from PIL import Image
-start_time = time.perf_counter()
-image = Image.open("origin.jpg")
-end_time = time.perf_counter()
-execution_time = end_time - start_time
-print(f"PIL READ: Execution time: {execution_time:.4f} seconds")
+# image.save("pil_origin.jpg", optimize=True, quality=85)
 
-# Compress and save the image
-start_time = time.perf_counter()
-image.save("pil_origin.jpg", optimize=True, quality=85)
-end_time = time.perf_counter()
-execution_time = end_time - start_time
-print(f"PIL COMPRESS: Execution time: {execution_time:.4f} seconds")
+#hydrus key c87559638ca2aaebe9ec109248d290d7b96be20d4cbc5479cc7ee555289fa5dd
+# http://localhost:45869/
+# will be diff per user
+
+class MainApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Hydrus Compressor")
+        self.setGeometry(100, 100, 800, 400)
+
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+
+        left_pane = input_view.InputWindow()
+        right_pane = output_view.OutputWindow()
+
+        left_pane.pass_output_window(right_pane.output_list)
+
+        splitter.addWidget(left_pane)
+        splitter.addWidget(right_pane)
+
+        self.setCentralWidget(splitter)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainApp()
+    window.show()
+    sys.exit(app.exec())
