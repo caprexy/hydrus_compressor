@@ -1,2 +1,7 @@
 requests
 PyQt6
+pytest
+pytest-qt
+pytest-cov
+pytest-watch
+coverage

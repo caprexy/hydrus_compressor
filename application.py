@@ -1,7 +1,9 @@
+"""Main application function to be called
+"""
 import sys
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
 
 from view import input_view, output_view
 
@@ -24,6 +26,11 @@ from view import input_view, output_view
 # will be diff per user
 
 class MainApp(QMainWindow):
+    """Primary class, uses QT as a base
+
+    Args:
+        QMainWindow (_type_): needed to be a QT application
+    """
     def __init__(self):
         super().__init__()
 

@@ -1,15 +1,22 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout
-
+""" Controller for input plane where user chooses their settings and such
+"""
+import json
 import requests
 
-import constants
+# pylint: disable=E0611
+from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout
+
 from models.user_model import UserInfo
-import json
+import constants
 
 userInfo = UserInfo()
 
 def warning(reason:str):
+    """Creates a warning popup with given reason
+
+    Args:
+        reason (str): Text to be put into warning box
+    """
     warning_window = QDialog()
     warning_window.setWindowTitle("Warning!!!!!")
     warning_window_layout = QVBoxLayout()
@@ -33,10 +40,19 @@ def get_files(
         get_inbox : bool, 
         get_archive : bool,
 ):
+    """ Once all inputs are given, the get files button is clicked and we pass in all information
 
+    Args:
+        max_file_size (int): number for max file size
+        size_type (str): descriptor for max file size number
+        get_imgs (bool): to get imgs or not
+        get_vids (bool): to get vids or not
+        get_inbox (bool): if should get inbox stuff
+        get_archive (bool): if should get archive stuff
+    """
     hydrus_key, api_port = userInfo.get_user_info()
     print(hydrus_key, api_port)
-    if hydrus_key == None or api_port == None:
+    if hydrus_key is None or api_port is None:
         warning("Missing either api port or hydrus key!")
         return    
 
@@ -62,7 +78,8 @@ def get_files(
         },
         params={
             "tags" : json.dumps(tags_list)
-        }
+        },
+        timeout= 10
     )
     print(res.json())
 
@@ -131,5 +148,4 @@ def open_config_menu():
     config_window_layout.addLayout(button_layout)
 
     config_window.exec()
-
     
