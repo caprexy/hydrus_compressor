@@ -1,9 +1,16 @@
+"""Right panel where the output/found files should be displayed
+"""
+    
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidget, QPushButton
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton
+# import controller.output_controller as output_controller
 
-import controller.output_controller as output_controller
 class OutputWindow(QWidget):
+    """Primary class for the right panel
+
+    Args:
+        QWidget (_type_): For qwidget import, standard
+    """
     input_window = None
 
     def __init__(self):

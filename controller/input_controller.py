@@ -84,6 +84,8 @@ def get_files(
     print(res.json())
 
 def open_config_menu():
+    """Function to be called when making a popup for the config menu
+    """
     config_window = QDialog()
     config_window.setWindowTitle("Set user information")
     config_window_layout = QVBoxLayout()

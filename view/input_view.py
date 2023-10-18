@@ -1,11 +1,16 @@
-
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QCheckBox, QWidget, QVBoxLayout, QLineEdit, QListWidget, QPushButton
-from PyQt6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QPushButton, QSpinBox, QVBoxLayout
+"""View for the left side of the panel. Should be where the user makes all their inputs
+"""
+from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout
 
 import controller.input_controller as input_controller
 
 class InputWindow(QWidget):
+    """Qwidget object to define the input window frame
+
+    Args:
+        QWidget (_type_): standard input for the qwidget
+    """
     output_window = None
     def __init__(self):
         super().__init__()
@@ -60,4 +65,9 @@ class InputWindow(QWidget):
         input_layout.addWidget(config_button)
     
     def pass_output_window(self, output_window: QWidget):
+        """Lets the output window be passed into the input window so it can edit it
+
+        Args:
+            output_window (QWidget): should be next to the input view as the right window
+        """
         self.output_window = output_window
