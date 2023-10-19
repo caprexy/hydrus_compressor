@@ -80,7 +80,7 @@ class UserInfo:
                     print("The file is empty.")
                     return ("TFIE", None)
                 data = json.load(json_file)
-                self.hydrus_key = data[constants.HYDRUS_APIKEY_KEY]
+                self.hydrus_key = str(data[constants.HYDRUS_APIKEY_KEY])
                 self.api_port = data[constants.HYDRUS_PORT_KEY]
             return data
         except FileNotFoundError:

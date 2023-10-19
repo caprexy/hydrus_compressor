@@ -1,9 +1,9 @@
 """Right panel where the output/found files should be displayed
 """
     
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidget, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QPushButton
 
-# import controller.output_controller as output_controller
+from controller.output_controller import OutputController
 
 class OutputWindow(QWidget):
     """Primary class for the right panel
@@ -12,18 +12,25 @@ class OutputWindow(QWidget):
         QWidget (_type_): For qwidget import, standard
     """
     input_window = None
+    output_controller = None
+    table = None
 
     def __init__(self):
         super().__init__()
         
+        
         output_layout = QVBoxLayout()
-        self.output_list = QListWidget()
+        self.file_table = QTableWidget()
 
         self.setLayout(output_layout)
 
-        output_layout.addWidget(self.output_list)
+        output_layout.addWidget(self.file_table)
 
         
         compress_button = QPushButton("Compress selected files")
         # compress_button.clicked.connect()
         output_layout.addWidget(compress_button)
+        
+        self.output_controller = OutputController(
+            self.file_table
+        )

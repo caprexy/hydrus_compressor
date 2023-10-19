@@ -24,6 +24,7 @@ from view import input_view, output_view
 #hydrus key c87559638ca2aaebe9ec109248d290d7b96be20d4cbc5479cc7ee555289fa5dd
 # http://localhost:45869/
 # will be diff per user
+import intercontroller_comm
 
 class MainApp(QMainWindow):
     """Primary class, uses QT as a base
@@ -42,7 +43,9 @@ class MainApp(QMainWindow):
         left_pane = input_view.InputWindow()
         right_pane = output_view.OutputWindow()
 
-        left_pane.pass_output_window(right_pane.output_list)
+        intercontroller_comm.connect_input_output_controllers(
+                left_pane.input_controller,
+                right_pane.output_controller)
 
         splitter.addWidget(left_pane)
         splitter.addWidget(right_pane)

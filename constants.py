@@ -8,3 +8,9 @@ HYDRUS_APIKEY_PARAM = "Hydrus-Client-API-Access-Key"
 HYDRUS_PORT_KEY = "port"
 
 LOCALHOST="http://localhost:"
+
+FILE_ID_JSON_KEY = "file_ids"
+FILE_LIST_METADATA_KEY = "metadata"
+
+# API strs
+GET_FILE_SEARCH = "/get_files/search_files"

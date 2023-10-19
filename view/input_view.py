@@ -3,7 +3,7 @@
 from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout
 
-import controller.input_controller as input_controller
+from controller.input_controller import InputController
 
 class InputWindow(QWidget):
     """Qwidget object to define the input window frame
@@ -11,9 +11,12 @@ class InputWindow(QWidget):
     Args:
         QWidget (_type_): standard input for the qwidget
     """
-    output_window = None
+    input_controller = None
+    
     def __init__(self):
         super().__init__()
+        
+        self.input_controller = InputController()
         
         input_layout = QVBoxLayout()
         self.setLayout(input_layout)
@@ -51,7 +54,7 @@ class InputWindow(QWidget):
         input_layout.addLayout(checkbox_layout)
         
         get_files_button.clicked.connect( lambda:
-            input_controller.get_files(
+            self.input_controller.get_files(
                 file_number_box.value(),
                 size_type_box.currentText(),
                 img_checkbox.isChecked(),
@@ -61,13 +64,5 @@ class InputWindow(QWidget):
             ))
 
         config_button = QPushButton("Open config")
-        config_button.clicked.connect(input_controller.open_config_menu)
+        config_button.clicked.connect(self.input_controller.open_config_menu)
         input_layout.addWidget(config_button)
-    
-    def pass_output_window(self, output_window: QWidget):
-        """Lets the output window be passed into the input window so it can edit it
-
-        Args:
-            output_window (QWidget): should be next to the input view as the right window
-        """
-        self.output_window = output_window
