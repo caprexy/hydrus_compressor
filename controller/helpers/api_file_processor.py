@@ -23,8 +23,8 @@ def get_files_from_api(api_port:int, hydrus_key:str, tags_list: list[str]):
         },
         timeout= 10
     )
-    file_ids = res.json()[constants.FILE_ID_JSON_KEY][:2] ### IMPORTANT WE'VE LIMITED FOR TESTING
-    
+    file_ids = res.json()[constants.FILE_ID_JSON_KEY]
+       
     res = requests.get(
         url=constants.LOCALHOST+str(api_port)+"/get_files/file_metadata",
         headers={

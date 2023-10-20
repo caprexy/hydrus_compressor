@@ -53,6 +53,13 @@ class InputController(QObject):
             get_inbox (bool): if should get inbox stuff
             get_archive (bool): if should get archive stuff
         """
+        self.max_file_size = max_file_size
+        self.size_type = size_type
+        self.get_imgs = get_imgs
+        self.get_vids = get_vids
+        self.get_inbox = get_inbox
+        self.get_archive = get_archive
+        
         hydrus_key, api_port = self.userInfo.get_user_info()
         if hydrus_key is None or api_port is None:
             self.warning("Missing either api port or hydrus key!")

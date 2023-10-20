@@ -24,4 +24,9 @@ def connect_input_output_controllers(
 def pass_input_data_to_output():
     """Function to pass data from input controller to output controller
     """
+    output_controller_obj.set_file_options(
+        input_controller_obj.max_file_size,
+        input_controller_obj.size_type,
+    )
+    
     output_controller_obj.build_file_table(input_controller_obj.api_file_objects)

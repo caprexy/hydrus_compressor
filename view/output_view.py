@@ -25,6 +25,7 @@ class OutputWindow(QWidget):
         self.setLayout(output_layout)
 
         output_layout.addWidget(self.file_table)
+        output_layout.setContentsMargins(0,0,0,0)
 
         
         compress_button = QPushButton("Compress selected files")
