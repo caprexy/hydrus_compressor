@@ -48,7 +48,9 @@ class MainApp(QMainWindow):
                 right_pane.output_controller)
 
         splitter.addWidget(left_pane)
-        splitter.addWidget(right_pane)
+        splitter.addWidget(right_pane)        
+        splitter.setStretchFactor(0, 1) 
+        splitter.setStretchFactor(1, 50)  
 
         self.setCentralWidget(splitter)
 

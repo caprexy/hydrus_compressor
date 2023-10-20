@@ -19,14 +19,14 @@ def connect_input_output_controllers(
     input_controller_obj = input_controller_obj_in
     output_controller_obj = output_controller_obj_in
 
-    input_controller_obj.get_files_complete.connect(pass_input_data_to_output)
+    input_controller_obj.get_files_complete.connect(trigger_build_file_grid)
 
-def pass_input_data_to_output():
+def trigger_build_file_grid():
     """Function to pass data from input controller to output controller
     """
     output_controller_obj.set_file_options(
-        input_controller_obj.max_file_size,
         input_controller_obj.size_type,
     )
     
-    output_controller_obj.build_file_table(input_controller_obj.api_file_objects)
+    output_controller_obj.set_files(input_controller_obj.api_file_objects)
+    output_controller_obj.build_file_table()
