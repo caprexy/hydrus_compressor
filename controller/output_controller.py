@@ -1,10 +1,12 @@
 """Is the right side of the primary screen, should deal with calculating everything needed to setup the table for the view
 """
-from PyQt6.QtCore import QObject, Qt
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QGraphicsPixmapItem
+from PyQt6.QtCore import QObject
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget
 from PyQt6.QtGui import QBrush, QColor
 
 from models.file_model import FileModel
+from models.file_display_tile import FileDisplayTile
+
 class OutputController(QObject):
     """Calculates anything needed for the output/right view
 
@@ -43,6 +45,7 @@ class OutputController(QObject):
         
     def build_file_table(self):
         """Builds the file table based off of the file_list, so can be called any time
+            Calculates where to put the file tiles
         """
         if self.file_list is None:
             return
@@ -50,69 +53,54 @@ class OutputController(QObject):
         
         available_width = self.parent_widget.width() - 40
         
-        cell_size = 200
+        tile_width = 200
+        tile_height = 200
         
-        num_cols = max(1, available_width // cell_size)
+        num_cols = max(1, available_width // tile_width)
         
         row = col = 0
     
+        # NEED TO BUILD THE GRID OF TILES AND THEN LIMIT THE SIZE OF THE SCENE SO THE
+        # SCENE WILL START IN THE TOP LEFT OF THE VIEW
+        # OTHERWISE VIEW DOES STUFF IDK
         for file in self.file_list:
             if col % 2 == 0:
-                background_rect = QGraphicsRectItem(col * cell_size, row * cell_size, cell_size, cell_size)
+                background_rect = QGraphicsRectItem(col * tile_width, row * tile_height, tile_width, tile_height)
                 background_rect.setBrush(QBrush(QColor(192, 192, 192)))
                 self.file_grid_scene.addItem(background_rect)
-                
-            image = self.file_to_objs(file, cell_size)
-            offset = int((cell_size-image.boundingRect().width())/2)
-            image.setPos(col * cell_size + offset, row * cell_size)
-            self.file_grid_scene.addItem(image)
+            else:
+                background_rect = QGraphicsRectItem(col * tile_width, row * tile_height, tile_width, tile_height)
+                background_rect.setBrush(QBrush(QColor(192, 255, 192)))
+                self.file_grid_scene.addItem(background_rect)
+            tile = FileDisplayTile(file, tile_width)
+            # offset = int((cell_size-tile.boundingRect().width())/2)
+            tile.setPos(col * tile_width, row * tile_height)
+            self.file_grid_scene.addItem(tile)
+            background_rect = QGraphicsRectItem(0,0,50,50)
+            background_rect.setBrush(QBrush(QColor(255, 192, 192)))
+            background_rect.setPos(col * tile_width, row * tile_height)
+            # self.file_grid_scene.addItem(background_rect)
+            
             
             col += 1
             if col == num_cols:
                 col = 0
                 row += 1
-            
+           
     
-    def file_to_objs(self, file: FileModel, cell_size: int):
-        """Turns a file into all of the objects to display
+    # def handle_click(self, event):
+    #     """Beginnings of an handle click event
 
-        Args:
-            file (FileModel): file to turn into objects
-            cell_size (int): cell size of the working space so we can confine objects to cell
+    #     Args:
+    #         event (_type_): _description_
+    #     """
+    #     # Get the position of the click in scene coordinates
+    #     scene_pos = self.file_grid_view.mapToScene(event.pos())
 
-        Returns:
-            _type_: QGraphicsPixmapItem image
-        """
-        
-        pixmap = file.pixmap
-        width_factor = cell_size / pixmap.width()
-        height_factor = cell_size / pixmap.height()
-        
-        scaling_factor = min(width_factor, height_factor)
+    #     # Find the item at the click position
+    #     clicked_item = self.file_grid_scene.itemAt(scene_pos, self.file_grid_view.transform())
 
-        scaled_pixmap = pixmap.scaled(
-            int(pixmap.width() * scaling_factor),
-            int(pixmap.height() * scaling_factor),
-            Qt.AspectRatioMode.KeepAspectRatio
-        )
-        
-        image = QGraphicsPixmapItem(scaled_pixmap)
-        
-        return image
-    
-    def handle_click(self, event):
-        """Beginnings of an handle click event
-
-        Args:
-            event (_type_): _description_
-        """
-        # Get the position of the click in scene coordinates
-        scene_pos = self.file_grid_view.mapToScene(event.pos())
-
-        # Find the item at the click position
-        clicked_item = self.file_grid_scene.itemAt(scene_pos, self.file_grid_view.transform())
-
-        if clicked_item:
-            print(f"Clicked on item: {clicked_item}")
-        else:
-            print("Clicked on an empty area")
+    #     if clicked_item:
+    #         print(f"Clicked on item: {clicked_item}")
+    #     else:
+    #         print("Clicked on an empty area")

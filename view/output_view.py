@@ -1,8 +1,9 @@
 """Right panel where the output/found files should be displayed
 """
     
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsView, QGraphicsScene, QPushButton
-from PyQt6.QtCore import Qt 
+from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QGraphicsView, QGraphicsScene, QPushButton, QGraphicsRectItem
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QBrush, QColor
 from controller.output_controller import OutputController
 
 
@@ -25,25 +26,24 @@ class OutputWindow(QWidget):
         self.setLayout(output_layout)
 
         file_grid_view = QGraphicsView()
-        file_grid_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         file_grid_view.setInteractive(True)
         output_layout.addWidget(file_grid_view)
-        
-        
+
         file_grid_scene = QGraphicsScene()
+        file_grid_scene.setBackgroundBrush(QBrush(QColor(200, 200, 200)))
         file_grid_view.setScene(file_grid_scene)
-        
+        file_grid_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         
         compress_button = QPushButton("Compress selected files")
         # compress_button.clicked.connect()
         output_layout.addWidget(compress_button)
-        
+
         self.output_controller = OutputController(
             self,
             file_grid_scene,
             file_grid_view
         )
-        file_grid_view.mousePressEvent = self.output_controller.handle_click
+        # file_grid_view.mousePressEvent = self.output_controller.handle_click
 
     def resizeEvent(self, event):
         """Should overload the existing resize event, tells us to rebuild the file table
