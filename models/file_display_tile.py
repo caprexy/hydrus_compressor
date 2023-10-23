@@ -1,67 +1,87 @@
-from PyQt6.QtWidgets import  QGraphicsLinearLayout, QGraphicsRectItem, QGraphicsProxyWidget , QGraphicsSimpleTextItem, QGraphicsWidget
-from PyQt6.QtCore import  Qt, QMarginsF 
-from PyQt6.QtGui import QBrush, QColor
+"""This is the model that represents a file as a tile. These tiles can then be arranged to become a grid.
+    Has all file information and grid painting info.
+"""
+from PyQt6.QtWidgets import  QGraphicsWidget
+from PyQt6.QtCore import  Qt, QRectF
+from PyQt6.QtGui import  QColor,  QFontMetrics
 
 from models.file_model import FileModel
+
 class FileDisplayTile(QGraphicsWidget):
+    """Custom widget to reprsent a tile in the grid of images.
+
+    Args:
+        QGraphicsWidget (QGraphicsWidget): inheritence
+    """
     
-    def __init__(self, input_file: FileModel, cell_size: int):
+    def __init__(self, input_file: FileModel, tile_width: int, tile_height: int):
         """Creates a new tile to display the file and all file information
 
         Args:
-            width (int): width of the tile, usually cell size
-            height (int): height of the tile, usually cell size
             input_file (FileModel): file object to use
-            cell_size (int): cell size
+            tile_width (int) : width of tile
+            tile_height (int): heeight of tile
         """
         super().__init__()
         
         self.file_obj = input_file
-        self.parent_cell_size = cell_size
+        self.tile_width = tile_width
+        self.tile_height = tile_height
         
-        layout = QGraphicsLinearLayout(Qt.Orientation.Vertical, self)
-        
-        layout.setContentsMargins(0,0,0,0)
         self.setContentsMargins(0,0,0,0)
         
-        class CustomGraphicsWidget(QGraphicsWidget):
-            def paint(self, painter, option, widget):
-                rect = self.rect()
-                painter.setBrush(QBrush(QColor(255, 0, 0)))  # Set the color of the rectangle
-                # Calculate the position to center the rectangle
-                rect_width = rect.width()
-                rect_height = rect.height()
-                x = (cell_size - rect_width) / 2
-                y = (cell_size - rect_height) / 2
-                painter.drawRect(x, y, rect_width, rect_height)
-        
-        
-        widget = CustomGraphicsWidget()
-        widget.setPos(0,0)
-        layout.addItem(widget)
-        layout.setAlignment(widget,Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        # split tile into image and label according to hard coded ratios here
+        self.image_height = int(self.tile_height * .9)
+        self.text_height = int(self.tile_height * .1)
 
         
+    def paint(self, painter, option, widget=None):
+        """Overloading of the QGraphicsWidget paint string. See original
+        """
+        super().paint(painter, option, widget)
         
-        # print(self.geometry().x())
-        ## build the image
-        # pixmap = self.file_obj.pixmap
-        # width_factor = cell_size / pixmap.width()
-        # height_factor = cell_size / pixmap.height()
+        #build a background and outline for the tile
+        painter.setPen(QColor(0, 0, 0))  # Set the pen color (outline color)
+        painter.setBrush(QColor(255, 0, 0))  # Set the brush color (fill color)
+        rect_x = 0
+        rect_y = self.tile_height-self.text_height
+        rect_w = self.tile_width-1
+        rect_h = self.text_height
+        painter.drawRect(rect_x, rect_y, rect_w, rect_h)
         
-        # scaling_factor = min(width_factor, height_factor)
+        
+        # build the image and scale it
+        pixmap = self.file_obj.pixmap
+        width_factor = self.tile_width / pixmap.width()
+        height_factor = self.image_height / pixmap.height()
+        scaling_factor = min(width_factor, height_factor)
+        scaled_pixmap = pixmap.scaled(
+            int(pixmap.width() * scaling_factor),
+            int(pixmap.height() * scaling_factor),
+            Qt.AspectRatioMode.KeepAspectRatio
+        )
+        x = (self.tile_width - scaled_pixmap.width()) / 2 # center of image at center of tile
+        painter.drawPixmap(int(x), 1, scaled_pixmap)
 
-        # scaled_pixmap = pixmap.scaled(
-        #     int(pixmap.width() * scaling_factor),
-        #     int(pixmap.height() * scaling_factor),
-        #     Qt.AspectRatioMode.KeepAspectRatio
-        # )
+
+        # Create a label below the image
+        painter.setPen(QColor(0, 0, 0))
+        text = "Centered Text"
+        font_metrics = QFontMetrics(painter.font()) #need complicated calculations for box shes
+        text_rect = font_metrics.boundingRect(text)
+        text_width = text_rect.width()
+        text_height = text_rect.height()
+        text_x = int(rect_x + (rect_w - text_width) / 2)
+        text_y = int(rect_y + (rect_h - text_height) / 2 + text_height)
+        painter.drawText(text_x, text_y, text)
         
-        # img = QLabel()
-        # pixmap = QPixmap(scaled_pixmap)
-        # img.setPixmap(pixmap)
-        # proxy_widget = QGraphicsProxyWidget()
-        # proxy_widget.setWidget(img)
-        # proxy_widget.setPos(0,0)
-        # layout.addItem(proxy_widget)
-        # layout.setAlignment(proxy_widget, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    def boundingRect(self):
+        """Overloaded define bounding rect
+        """
+        return QRectF(0, 0, self.tile_width, self.tile_height) 
+
+    def setGeometry(self, rect):
+        """ Overloaded set geometry but nothing really different
+        """
+        self.prepareGeometryChange()
+        self.rect = rect

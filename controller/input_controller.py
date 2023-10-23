@@ -121,6 +121,8 @@ class InputController(QObject):
         remember_button = QPushButton("Remember these values")
         button_layout.addWidget(remember_button)
         def memorize_values():
+            """Attempts to memorize the values and error handling for when it goes wrong
+            """
             hydrus_key = hydrus_key_input.text().strip()
             api_port = api_input.text().strip()
             if hydrus_key == "" and api_port == "":
