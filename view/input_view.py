@@ -26,7 +26,7 @@ class InputWindow(QWidget):
         input_layout.addWidget(get_files_button)
         
         conditions_layout = QHBoxLayout()
-        file_size_explain_label = QLabel("Compress if greater than: ")
+        file_size_explain_label = QLabel("Get if greater than: ")
         conditions_layout.addWidget(file_size_explain_label)
         file_number_box = QSpinBox()
         file_number_box.setValue(10)
@@ -38,7 +38,7 @@ class InputWindow(QWidget):
         input_layout.addLayout(conditions_layout)
 
         checkbox_layout = QHBoxLayout()
-        file_size_explain_label = QLabel("Compress if greater than: ")
+        file_size_explain_label = QLabel("Get if greater than: ")
         img_checkbox = QCheckBox('Images')
         img_checkbox.setChecked(True)
         checkbox_layout.addWidget(img_checkbox)

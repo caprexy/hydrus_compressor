@@ -30,7 +30,7 @@ class OutputWindow(QWidget):
         output_layout.addWidget(file_grid_view)
 
         file_grid_scene = FileDisplayScene()
-        file_grid_scene.setBackgroundBrush(QBrush(QColor(200, 200, 200)))
+        file_grid_scene.setBackgroundBrush(QBrush(QColor(167, 164, 163)))
         file_grid_view.setScene(file_grid_scene)
         file_grid_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         

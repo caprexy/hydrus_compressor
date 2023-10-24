@@ -35,24 +35,38 @@ class OutputController(QObject):
         
         tile_width = 200
         tile_height = 200
+        width_pad = 10
+        height_pad = 10
         
         available_width = self.parent_widget.width() - 40
         num_cols = max(1, available_width // tile_width)
         
+        # build the tiles and sort them and 
+        # then let them know their siblings and place on scene
         row = col = 0
-        ordered_tiles = []
+        tiles = []
         for file in self.file_list:
             file.size_type = self.size_type
+            tile = FileDisplayTile(file, tile_width, tile_height)
+            tiles.append(tile)
+        ordered_tiles = sorted(tiles, 
+                               key=lambda tile: tile.file_obj.size_bytes, 
+                               reverse=True)
         
-            tile = FileDisplayTile(file, tile_width, tile_height, ordered_tiles)
-            tile.setPos(col * tile_width, row * tile_height)
+        for tile in ordered_tiles:
+            tile.set_ordered_sibling_tiles(ordered_tiles)
+            tile.setPos(col * (tile_width) + (col+1)*width_pad, 
+                        row * (tile_height) + (row+1)*height_pad)
             self.file_grid_scene.addItem(tile)
-            ordered_tiles.append(tile)
             col += 1
             if col == num_cols:
                 col = 0
                 row += 1
-            
+        
+        # resize the scene to eliminate empty space
+        self.file_grid_scene.setSceneRect(0, 0, 
+                self.file_grid_scene.width(), 
+                tile.mapToScene(0, 0).y()+tile_height+height_pad+10)
     
     def set_file_options(self, 
         size_type_in: str,

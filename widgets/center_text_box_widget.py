@@ -48,7 +48,7 @@ class CenterTextBox(QGraphicsWidget):
         
         # draw rectangle with colors
         painter.setPen(QColor(0, 0, 0))  
-        painter.setBrush(QColor(255, 0, 0))
+        painter.setBrush(QColor(236, 236, 236 ))
         rect_w = self.box_width-1
         rect_h = self.box_height
         painter.drawRect(box_x, box_y, rect_w, rect_h)

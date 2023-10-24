@@ -16,11 +16,13 @@ class FileDisplayTile(QGraphicsItem):
         QGraphicsWidget (QGraphicsWidget): inheritence
     """
     
-    tile_background_color = QColor(192, 255, 192)
-    selected_background_color = QColor(255, 255, 255)
+    tile_background_color = QColor(167, 164, 163)
+    selected_background_color = QColor(179, 236, 248)
     highlight_tile = False
+    ordered_sibling_tiles = None
+    file_obj = None
     
-    def __init__(self, input_file: FileModel, tile_width: int, tile_height: int, ordered_sibling_tiles:list[QGraphicsItem]):
+    def __init__(self, input_file: FileModel, tile_width: int, tile_height: int):
         """Creates a new tile to display the file and all file information
 
         Args:
@@ -35,7 +37,6 @@ class FileDisplayTile(QGraphicsItem):
         self.tile_height = tile_height
         self.pivot_tile = False
         self.highlight_tile = False
-        self.ordered_sibling_tiles = ordered_sibling_tiles
         
         self.setFlag(QGraphicsWidget.GraphicsItemFlag.ItemIsSelectable)
         
@@ -87,24 +88,24 @@ class FileDisplayTile(QGraphicsItem):
         """
         modifier = event.modifiers()
         found_pivot = None
-        new_pivot = None
-        for item in self.scene().items():
-            if isinstance(item, FileDisplayTile):
-                if modifier == Qt.KeyboardModifier.ShiftModifier:
-                    # look for pivots for shift multiple select
-                    if item.isSelected():
-                        new_pivot = item
-                    if item.pivot_tile is True:
-                        found_pivot = item
-                elif modifier == Qt.KeyboardModifier.NoModifier:
-                    #unhighlight all other tiles
-                    item.setSelected(False)
-                    item.highlight_tile = False
-                    item.pivot_tile = False
-                    item.update()
-                elif modifier == Qt.KeyboardModifier.ControlModifier:
-                    if item.pivot_tile is True:
-                        item.pivot_tile = False
+        last_clicked_tile = None
+        for tile in self.ordered_sibling_tiles:
+            if modifier == Qt.KeyboardModifier.ShiftModifier:
+                if tile.isSelected():  #find last clicked tile
+                    last_clicked_tile = tile
+                if tile.pivot_tile is True: # finds the prexisting pivot
+                    found_pivot = tile
+            elif modifier == Qt.KeyboardModifier.NoModifier:
+                #unhighlight all other tiles
+                tile.highlight_tile = False
+                tile.pivot_tile = False
+                tile.update()
+            elif modifier == Qt.KeyboardModifier.ControlModifier:
+                if tile.pivot_tile is True: #clears any prexisting pivot since 
+                    # we are becoming the new one
+                    tile.pivot_tile = False
+            if tile.isSelected():
+                tile.setSelected(False)
         self.setSelected(True)
         self.update()
         
@@ -113,11 +114,21 @@ class FileDisplayTile(QGraphicsItem):
             self.highlight_tile = True
         
         if modifier == Qt.KeyboardModifier.ShiftModifier:
-            if found_pivot:
-                new_pivot = found_pivot
-            else:
-                new_pivot.pivot_tile = True
-            self.select_multiple_tiles(new_pivot)
+            if found_pivot and last_clicked_tile is not None:
+                # changing an existing selection so need to erase previous selection
+                last_clicked_tile = self.ordered_sibling_tiles.index(last_clicked_tile)
+                pivot_tile_index = self.ordered_sibling_tiles.index(found_pivot)
+                first_index = last_clicked_tile if last_clicked_tile < pivot_tile_index else pivot_tile_index
+                second_index = pivot_tile_index if first_index == last_clicked_tile else last_clicked_tile
+        
+                for i,tile in enumerate(self.ordered_sibling_tiles):
+                    if first_index <= i <= second_index:
+                        tile.highlight_tile = False
+                        tile.update()
+            if found_pivot is None:
+                found_pivot = last_clicked_tile
+                last_clicked_tile.pivot_tile = True
+            self.select_multiple_tiles(found_pivot)
         return super().mousePressEvent(event)
     
     def select_multiple_tiles(self, pivot_tile):
@@ -143,3 +154,5 @@ class FileDisplayTile(QGraphicsItem):
         """
         return QRectF(0, 0, self.tile_width, self.tile_height) 
     
+    def set_ordered_sibling_tiles(self, tiles:list[QGraphicsItem]):
+        self.ordered_sibling_tiles = tiles
