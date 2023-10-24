@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor
 from controller.output_controller import OutputController
 
-
+from widgets.file_display_scene_widget import FileDisplayScene
 
 class OutputWindow(QWidget):
     """Primary class for the right panel
@@ -29,7 +29,7 @@ class OutputWindow(QWidget):
         file_grid_view.setInteractive(True)
         output_layout.addWidget(file_grid_view)
 
-        file_grid_scene = QGraphicsScene()
+        file_grid_scene = FileDisplayScene()
         file_grid_scene.setBackgroundBrush(QBrush(QColor(200, 200, 200)))
         file_grid_view.setScene(file_grid_scene)
         file_grid_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -50,3 +50,4 @@ class OutputWindow(QWidget):
         """
         self.output_controller.build_file_table()
         event.accept()
+        

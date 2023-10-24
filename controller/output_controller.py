@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QW
 from PyQt6.QtGui import QBrush, QColor
 
 from models.file_model import FileModel
-from models.file_display_tile import FileDisplayTile
+from widgets.file_display_tile_widget import FileDisplayTile
 
 class OutputController(QObject):
     """Calculates anything needed for the output/right view
@@ -40,25 +40,19 @@ class OutputController(QObject):
         num_cols = max(1, available_width // tile_width)
         
         row = col = 0
+        ordered_tiles = []
         for file in self.file_list:
-            # temporary background colouring for visual purposes, can be improved
-            if col % 2 == 0:
-                background_rect = QGraphicsRectItem(col * tile_width, row * tile_height, tile_width, tile_height)
-                background_rect.setBrush(QBrush(QColor(192, 192, 192)))
-                self.file_grid_scene.addItem(background_rect)
-            else:
-                background_rect = QGraphicsRectItem(col * tile_width, row * tile_height, tile_width, tile_height)
-                background_rect.setBrush(QBrush(QColor(192, 255, 192)))
-                self.file_grid_scene.addItem(background_rect)
-                
-            tile = FileDisplayTile(file, tile_width, tile_height)
+            file.size_type = self.size_type
+        
+            tile = FileDisplayTile(file, tile_width, tile_height, ordered_tiles)
             tile.setPos(col * tile_width, row * tile_height)
             self.file_grid_scene.addItem(tile)
-            
+            ordered_tiles.append(tile)
             col += 1
             if col == num_cols:
                 col = 0
                 row += 1
+            
     
     def set_file_options(self, 
         size_type_in: str,

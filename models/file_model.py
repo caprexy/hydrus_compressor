@@ -8,7 +8,7 @@ class FileModel:
     mime = ""
     display_tags  = []
     pixmap = None
-    
+    size_type = ""
     def parse_api_metadata(self, file_data: dict):
         """takes the result of the api call for getting file metadata and processes it into the file object values
 
