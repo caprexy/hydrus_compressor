@@ -63,6 +63,7 @@ class InputWindow(QWidget):
                 inbox_checkbox.isChecked()
             ))
 
+        
         config_button = QPushButton("Open config")
         config_button.clicked.connect(self.input_controller.open_config_menu)
         input_layout.addWidget(config_button)

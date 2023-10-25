@@ -6,6 +6,7 @@ from PyQt6.QtGui import QBrush, QColor
 
 from models.file_model import FileModel
 from widgets.file_display_tile_widget import FileDisplayTile
+from controller.helpers.file_compressor import compress_file_tiles
 
 class OutputController(QObject):
     """Calculates anything needed for the output/right view
@@ -49,12 +50,12 @@ class OutputController(QObject):
             file.size_type = self.size_type
             tile = FileDisplayTile(file, tile_width, tile_height)
             tiles.append(tile)
-        ordered_tiles = sorted(tiles, 
+        self.ordered_tiles = sorted(tiles, 
                                key=lambda tile: tile.file_obj.size_bytes, 
                                reverse=True)
         
-        for tile in ordered_tiles:
-            tile.set_ordered_sibling_tiles(ordered_tiles)
+        for tile in self.ordered_tiles:
+            tile.set_ordered_sibling_tiles(self.ordered_tiles)
             tile.setPos(col * (tile_width) + (col+1)*width_pad, 
                         row * (tile_height) + (row+1)*height_pad)
             self.file_grid_scene.addItem(tile)
@@ -67,6 +68,15 @@ class OutputController(QObject):
         self.file_grid_scene.setSceneRect(0, 0, 
                 self.file_grid_scene.width(), 
                 tile.mapToScene(0, 0).y()+tile_height+height_pad+10)
+    
+    def compress_selected_files(self):
+        """Called when pressing the compress selected files button
+        """
+        # if self.file_grid_scene is None or self.ordered_tiles == []:
+        #     return
+        self.build_file_table()
+        compress_file_tiles(self.ordered_tiles)
+        
     
     def set_file_options(self, 
         size_type_in: str,

@@ -36,7 +36,7 @@ class MainApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Hydrus Compressor")
-        self.setGeometry(100, 100, 800, 400)
+        self.setGeometry(700, 500, 800, 400)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
 

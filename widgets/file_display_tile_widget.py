@@ -52,6 +52,7 @@ class FileDisplayTile(QGraphicsItem):
         if input_file.size_type == "MB":
             size = size / (1024**2)
         size = round(size, 2)
+        self.calculated_size = size
         self.child_text_box = CenterTextBox(str(size) +" "+ input_file.size_type, 
                     self.tile_width, self.text_height)
         self.child_text_box.setParentItem(self)
@@ -63,7 +64,7 @@ class FileDisplayTile(QGraphicsItem):
         """
         
         # paint background
-        if self.isSelected() or self.highlight_tile:
+        if self.highlight_tile:
             color = self.selected_background_color
         else:
             color = self.tile_background_color
@@ -87,14 +88,16 @@ class FileDisplayTile(QGraphicsItem):
         """Overload original
         """
         modifier = event.modifiers()
-        found_pivot = None
+        pivot_tile = None
         last_clicked_tile = None
         for tile in self.ordered_sibling_tiles:
             if modifier == Qt.KeyboardModifier.ShiftModifier:
                 if tile.isSelected():  #find last clicked tile
+                    pivot_index = self.ordered_sibling_tiles.index(tile)
                     last_clicked_tile = tile
                 if tile.pivot_tile is True: # finds the prexisting pivot
-                    found_pivot = tile
+                    pivot_tile = tile
+                    pivot_index = self.ordered_sibling_tiles.index(tile)
             elif modifier == Qt.KeyboardModifier.NoModifier:
                 #unhighlight all other tiles
                 tile.highlight_tile = False
@@ -107,46 +110,37 @@ class FileDisplayTile(QGraphicsItem):
             if tile.isSelected():
                 tile.setSelected(False)
         self.setSelected(True)
-        self.update()
-        
-        if modifier == Qt.KeyboardModifier.ControlModifier:
+        if pivot_tile is None:
             self.pivot_tile = True
+        
+        # handle control click for self
+        if modifier == Qt.KeyboardModifier.ControlModifier and self.highlight_tile is True:
+            self.highlight_tile = False
+        elif modifier == Qt.KeyboardModifier.ControlModifier and self.highlight_tile is False:
             self.highlight_tile = True
-        
-        if modifier == Qt.KeyboardModifier.ShiftModifier:
-            if found_pivot and last_clicked_tile is not None:
-                # changing an existing selection so need to erase previous selection
-                last_clicked_tile = self.ordered_sibling_tiles.index(last_clicked_tile)
-                pivot_tile_index = self.ordered_sibling_tiles.index(found_pivot)
-                first_index = last_clicked_tile if last_clicked_tile < pivot_tile_index else pivot_tile_index
-                second_index = pivot_tile_index if first_index == last_clicked_tile else last_clicked_tile
-        
-                for i,tile in enumerate(self.ordered_sibling_tiles):
-                    if first_index <= i <= second_index:
+            self.pivot_tile = True
+        else:
+            self.highlight_tile = True
+            
+        # handle shift click
+        if modifier == Qt.KeyboardModifier.ShiftModifier and pivot_tile:
+            pivot_index = self.ordered_sibling_tiles.index(pivot_tile)
+            self_index = self.ordered_sibling_tiles.index(self)
+            # if last_clicked_tile wasn't pivot, then we must dehighlight other tiles
+            if pivot_tile is not last_clicked_tile and last_clicked_tile is not None:
+                last_clicked_index = self.ordered_sibling_tiles.index(last_clicked_tile)
+                for index, tile in enumerate(self.ordered_sibling_tiles):
+                    if last_clicked_index <= index <= pivot_index or pivot_index <= index <= last_clicked_index:
                         tile.highlight_tile = False
                         tile.update()
-            if found_pivot is None:
-                found_pivot = last_clicked_tile
-                last_clicked_tile.pivot_tile = True
-            self.select_multiple_tiles(found_pivot)
+            # highlight all new tiles from pivot to self 
+            for index, tile in enumerate(self.ordered_sibling_tiles):
+                if self_index <= index <= pivot_index or pivot_index <= index <= self_index:
+                    tile.highlight_tile = True
+                    tile.update()
+        
         return super().mousePressEvent(event)
     
-    def select_multiple_tiles(self, pivot_tile):
-        """From the pivot, select every tile inbetween pivot and self
-
-        Args:
-            pivot_tile (FileDisplayTile): pivot tile or one of the ends of a selected set of continous tiles
-        """
-        cur_tile_index = self.ordered_sibling_tiles.index(self)
-        pivot_tile_index = self.ordered_sibling_tiles.index(pivot_tile)
-        
-        first_index = cur_tile_index if cur_tile_index < pivot_tile_index else pivot_tile_index
-        second_index = pivot_tile_index if first_index == cur_tile_index else cur_tile_index
-        
-        for i,tile in enumerate(self.ordered_sibling_tiles):
-            if first_index <= i <= second_index:
-                tile.highlight_tile = True
-            tile.update()
         
     
     def boundingRect(self):

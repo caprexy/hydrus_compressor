@@ -1,6 +1,7 @@
 """ Controller for input plane where user chooses their settings and such
 """
 # pylint: disable=E0611
+import typing
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout
 
@@ -10,10 +11,17 @@ from controller.helpers import api_file_processor
 class InputController(QObject):
     """Class to define functions for the controller and to be used to be passed to the intercontroller comms
     """
-    userInfo = UserInfo()
+    
     get_files_complete = pyqtSignal()
     api_file_objects = []
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.userInfo = UserInfo()
+        if self.userInfo.get_user_info() == (None, None):
+            self.warning("Couldnt get your info. Please enter in settings!")
+        api_file_processor.set_user_info(self.userInfo)
+            
     def warning(self, reason:str):
         """Creates a warning popup with given reason
 
@@ -26,8 +34,8 @@ class InputController(QObject):
         warning_window.setLayout(warning_window_layout)
 
 
-        hydrus_key_label = QLabel(reason)
-        warning_window_layout.addWidget(hydrus_key_label)
+        reason_label = QLabel(reason)
+        warning_window_layout.addWidget(reason_label)
 
         close_button = QPushButton('Close', warning_window)
         close_button.clicked.connect(warning_window.accept)
@@ -59,11 +67,6 @@ class InputController(QObject):
         self.get_vids = get_vids
         self.get_inbox = get_inbox
         self.get_archive = get_archive
-        
-        hydrus_key, api_port = self.userInfo.get_user_info()
-        if hydrus_key is None or api_port is None:
-            self.warning("Missing either api port or hydrus key!")
-            return    
 
         tags_list = [
                 "system:filesize > "+str(max_file_size) + " "+ size_type,
@@ -80,8 +83,7 @@ class InputController(QObject):
             self.warning("Did not select inbox or archive")
             return
 
-        self.api_file_objects = api_file_processor.get_files_from_api(
-            api_port, hydrus_key, tags_list)
+        self.api_file_objects = api_file_processor.get_files_from_api(tags_list)
         
         self.get_files_complete.emit()
         

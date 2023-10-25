@@ -35,7 +35,6 @@ class OutputWindow(QWidget):
         file_grid_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         
         compress_button = QPushButton("Compress selected files")
-        # compress_button.clicked.connect()
         output_layout.addWidget(compress_button)
 
         self.output_controller = OutputController(
@@ -43,7 +42,7 @@ class OutputWindow(QWidget):
             file_grid_scene,
             file_grid_view
         )
-        # file_grid_view.mousePressEvent = self.output_controller.handle_click
+        compress_button.clicked.connect(self.output_controller.compress_selected_files)
 
     def resizeEvent(self, event):
         """Should overload the existing resize event, tells us to rebuild the file table
