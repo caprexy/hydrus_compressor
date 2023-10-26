@@ -1,5 +1,6 @@
 requests
 PyQt6
+Pillow
 pytest
 pytest-qt
 pytest-cov

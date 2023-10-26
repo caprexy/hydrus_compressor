@@ -15,7 +15,7 @@ class FileModel:
         Args:
             file_data (dict): given file data, is json as a dict
         """
-        # using https://hydrusnetwork.github.io/hydrus/developer_api.html#get_files_file_hashes
+        # using https://hydrusnetwork.github.io/hydrus/developer_api.html#get_files_metadata_file_hashes
         # we will use several hard coded values based on the json/list value of metadata/constants.FILE_ID_JSON_KEY
         self.file_id = file_data["file_id"]
         self.file_type, self.extension = file_data["mime"].split("/")

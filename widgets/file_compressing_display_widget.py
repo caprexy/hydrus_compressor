@@ -3,17 +3,18 @@ import sys
 import typing
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import QThread, QThreadPool, Qt, QEvent
-from PyQt6.QtGui import QTextDocument, QResizeEvent, QColorConstants, QBrush, QTextCursor, QTextCharFormat
+from PyQt6.QtGui import QScreen, QResizeEvent, QColorConstants, QBrush, QTextCursor, QTextCharFormat
 from PyQt6.QtWidgets import QScrollArea, QSizePolicy, QVBoxLayout,  QSizePolicy, QGridLayout, QTextEdit, QDialog,QFrame, QLabel, QWidget, QStackedLayout
 
 
-from widgets.file_display_tile_widget import FileDisplayTile
+from widgets.file_tile_widget import FileTile
 
 class FileCompressingProgressWindow(QDialog):
-    def __init__(self, file_tile_list:list[FileDisplayTile]):
+    def __init__(self, file_tile_list:list[FileTile]):
         super().__init__()
         self.setWindowTitle("File Compressing Progress Window")
-        self.setGeometry(100, 100, 300, 300)
+        self.setGeometry(1000, 500, 300, 300)
+        self.setSizeGripEnabled(True)
         
         # Set a layout for this widget
         layout = QVBoxLayout(self)
@@ -24,7 +25,10 @@ class FileCompressingProgressWindow(QDialog):
         layout.addWidget(primary_widget)
 
         # build file display grid
-        grid_layout = QGridLayout(primary_widget) 
+        grid_widget = QWidget()
+        primary_widget.setWidget(grid_widget)
+        grid_layout = QGridLayout(grid_widget) 
+        grid_layout.setSpacing(10)
         grid_layout.addWidget(
             QLabel("File ID"), 0,0 
         )
@@ -34,7 +38,6 @@ class FileCompressingProgressWindow(QDialog):
         grid_layout.addWidget(
             QLabel("Steps to do"), 0,2 
         )
-        
         for row_index, file_tile in enumerate(file_tile_list):
             row_index = row_index+1
             grid_layout.addWidget(
@@ -51,6 +54,11 @@ class FileCompressingProgressWindow(QDialog):
                 progressWordBox,
                 row_index, 2
             )
+            grid_layout.setRowMinimumHeight(row_index, progressWordBox.y())
+            line = QFrame()
+            line.setFrameStyle(QFrame.Shape.HLine)
+            line.setLineWidth(1)
+            row_index += 1
 
 class ProgressWordBox(QLabel):
     steps =[
@@ -74,17 +82,7 @@ class ProgressWordBox(QLabel):
         else:
             self.setText(self.steps[self.working_step])
             self.setStyleSheet("color: orange;")
-
         
-        
-    
-# class CompressingFileRow(QWidget):
-#     def __init__(self,
-#             file_id: str,
-#             file_size: str,
-#                  ) -> None:
-#         super().__init__()
-        
-# class CompressingFileThreadWorker(QThread):
-#     def __init__(self) -> None:
-#         super().__init__()
+class CompressingFileThreadWorker(QThread):
+    def __init__(self) -> None:
+        super().__init__()

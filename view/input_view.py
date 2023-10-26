@@ -22,8 +22,8 @@ class InputWindow(QWidget):
         self.setLayout(input_layout)
 
         
-        get_files_button = QPushButton("Get all files following the conditions below")
-        input_layout.addWidget(get_files_button)
+        get_files_metadata_button = QPushButton("Get all files following the conditions below")
+        input_layout.addWidget(get_files_metadata_button)
         
         conditions_layout = QHBoxLayout()
         file_size_explain_label = QLabel("Get if greater than: ")
@@ -53,8 +53,8 @@ class InputWindow(QWidget):
         checkbox_layout.addWidget(inbox_checkbox)
         input_layout.addLayout(checkbox_layout)
         
-        get_files_button.clicked.connect( lambda:
-            self.input_controller.get_files(
+        get_files_metadata_button.clicked.connect( lambda:
+            self.input_controller.get_files_metadata(
                 file_number_box.value(),
                 size_type_box.currentText(),
                 img_checkbox.isChecked(),

@@ -12,7 +12,7 @@ class InputController(QObject):
     """Class to define functions for the controller and to be used to be passed to the intercontroller comms
     """
     
-    get_files_complete = pyqtSignal()
+    get_files_metadata_complete = pyqtSignal()
     api_file_objects = []
 
     def __init__(self) -> None:
@@ -43,7 +43,7 @@ class InputController(QObject):
         
         warning_window.exec()
 
-    def get_files(self, 
+    def get_files_metadata(self, 
             max_file_size: int,
             size_type: str,
             get_imgs: bool,
@@ -83,9 +83,9 @@ class InputController(QObject):
             self.warning("Did not select inbox or archive")
             return
 
-        self.api_file_objects = api_file_processor.get_files_from_api(tags_list)
+        self.api_files_metadata = api_file_processor.get_filtered_files_metadata_from_api(tags_list)
         
-        self.get_files_complete.emit()
+        self.get_files_metadata_complete.emit()
         
     def open_config_menu(self):
         """Function to be called when making a popup for the config menu

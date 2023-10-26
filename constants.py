@@ -14,5 +14,6 @@ FILE_LIST_METADATA_KEY = "metadata"
 
 # API strs
 GET_FILE_SEARCH = "/get_files/search_files"
+GET_FILE_METADATA = "/get_files/file_metadata"
 GET_FILE_THUMBNAIL = "/get_files/thumbnail"
 GET_FULL_FILE = "/get_files/file"

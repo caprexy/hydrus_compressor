@@ -1,40 +1,41 @@
 """This is the model that represents a file as a tile. These tiles can then be arranged to become a grid.
-    Has all file information and grid painting info.
+    Has all file information and grid painting info. This is effectively a file.
 """
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import  QGraphicsSceneMouseEvent, QGraphicsWidget, QGraphicsRectItem, QGraphicsItem
-from PyQt6.QtCore import  Qt, QRectF, QEvent
+from PyQt6.QtCore import  Qt, QRectF, QEvent, QRunnable, pyqtSignal, QObject
 from PyQt6.QtGui import  QColor, QBrush, QPainterPath
+from queue import Queue
 
-from models.file_model import FileModel
+from controller.helpers import api_file_processor
+
 from widgets.center_text_box_widget import CenterTextBox
 
-class FileDisplayTile(QGraphicsItem):
+class FileTile(QGraphicsItem):
     """Custom widget to reprsent a tile in the grid of images.
 
     Args:
         QGraphicsWidget (QGraphicsWidget): inheritence
     """
     
-    tile_background_color = QColor(167, 164, 163)
+    tile_background_color = QColor(210, 210, 210)
     selected_background_color = QColor(179, 236, 248)
     highlight_tile = False
     ordered_sibling_tiles = None
-    file_obj = None
     
-    def __init__(self, input_file: FileModel, tile_width: int, tile_height: int):
+    def __init__(self, file_metadata: {}, tile_width: int, tile_height: int, size_type: str):
         """Creates a new tile to display the file and all file information
 
         Args:
-            input_file (FileModel): file object to use
+            file_metadata ({}}): file metadata to parse
             tile_width (int) : width of tile
             tile_height (int): heeight of tile
         """
         super().__init__()
-        
-        self.file_obj = input_file
+        self.process_metadata(file_metadata)
         self.tile_width = tile_width
         self.tile_height = tile_height
+        self.size_type = size_type
         self.pivot_tile = False
         self.highlight_tile = False
         
@@ -46,14 +47,14 @@ class FileDisplayTile(QGraphicsItem):
         
         # build textbox child widget
         # calculate text to say
-        size = input_file.size_bytes
-        if input_file.size_type == "GB":
+        size = self.size_bytes
+        if self.size_type == "GB":
             size = size / (1024**3)
-        if input_file.size_type == "MB":
+        if self.size_type == "MB":
             size = size / (1024**2)
         size = round(size, 2)
         self.calculated_size = size
-        self.child_text_box = CenterTextBox(str(size) +" "+ input_file.size_type, 
+        self.child_text_box = CenterTextBox(str(size) +" "+ self.size_type, 
                     self.tile_width, self.text_height)
         self.child_text_box.setParentItem(self)
         self.child_text_box.setPos(0, self.tile_height-self.text_height)
@@ -71,8 +72,12 @@ class FileDisplayTile(QGraphicsItem):
         painter.setBrush(QBrush(color))
         painter.drawRect(0, 0, self.tile_width, self.tile_height)
         
-        # build the image and scale it
-        pixmap = self.file_obj.pixmap
+        # paint textbox again
+        self.child_text_box.setParentItem(self)
+        self.child_text_box.setPos(0, self.tile_height-self.text_height)
+        
+        # get the thumbnail and build it
+        pixmap = api_file_processor.get_file_thumbnail(self.file_id)
         width_factor = self.tile_width / pixmap.width()
         height_factor = self.image_height / pixmap.height()
         scaling_factor = min(width_factor, height_factor)
@@ -141,7 +146,6 @@ class FileDisplayTile(QGraphicsItem):
         
         return super().mousePressEvent(event)
     
-        
     
     def boundingRect(self):
         """Overloaded define bounding rect
@@ -150,3 +154,53 @@ class FileDisplayTile(QGraphicsItem):
     
     def set_ordered_sibling_tiles(self, tiles:list[QGraphicsItem]):
         self.ordered_sibling_tiles = tiles
+        
+    def process_metadata(self, file_metadata):
+        self.file_id = file_metadata["file_id"]
+        self.file_type, self.extension = file_metadata["mime"].split("/")
+        self.size_bytes = file_metadata["size"]
+        self.display_tags = file_metadata["tags"]["616c6c206b6e6f776e2074616773"] 
+        
+
+
+class WorkerSignals(QObject):
+    finished = pyqtSignal()
+    
+class FileTileCreatorWorker(QRunnable):
+    """FileTile worker to create filetiles without slowing applicaiton too much
+    Args:
+        QRunnable (_type_): overriden thread type
+    """
+    def __init__(self, 
+            file_metadata:{}, 
+            tile_width:int, 
+            tile_height:int, 
+            file_queue:Queue,  
+            size_type:str) -> None:
+        """Worker to thread the creation of file_tiles
+
+        Args:
+            file_metadata ({}): json metadata in dict format
+            self.tile_width (int): width of the display tile
+            self.tile_height (int): height of the display tile
+            file_queue (file_queue): thread safe queue to put our complete objs in
+            size_type (str): pass in size type from input
+        """
+        super().__init__()
+        self.file_metadata = file_metadata
+        self.tile_width = tile_width
+        self.tile_height = tile_height
+        self.file_queue = file_queue
+        self.size_type = size_type
+        self.signals = WorkerSignals()
+        
+    def run(self) -> None:
+        """Overwrites thread run to instead put an filetile object with the given data
+        """
+        self.file_queue.put(
+            FileTile(self.file_metadata, 
+                     self.tile_width, 
+                     self.tile_height,  
+                     self.size_type))
+        self.signals.finished.emit()
+    

@@ -2,7 +2,7 @@
 """
 from PyQt6.QtWidgets import QGraphicsScene
 
-from widgets.file_display_tile_widget import FileDisplayTile
+from widgets.file_tile_widget import FileTile
 
 class FileDisplayScene(QGraphicsScene):
     """Redefines the scene used for the file display
@@ -23,7 +23,7 @@ class FileDisplayScene(QGraphicsScene):
 
         if len(items_at_click) == 0:
             for item in self.items():
-                if isinstance(item, FileDisplayTile):
+                if isinstance(item, FileTile):
                     item.highlight_tile = False
                     item.setSelected(False)
                     item.update()
