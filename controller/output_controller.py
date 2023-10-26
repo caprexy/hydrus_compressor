@@ -21,7 +21,6 @@ class OutputController(QObject):
     tile_width = 200
     tile_height = 200
     
-    thread_pool = QThreadPool()
     
     def __init__(self,
         parent_widget : QWidget,
@@ -39,49 +38,36 @@ class OutputController(QObject):
         if len(self.file_tile_list) == 0:
             return
         
-        for item in self.file_grid_scene.items():
-            self.file_grid_scene.removeItem(item)
         
         width_pad = 10
         height_pad = 10
         
-        #calculate number of rows and cols and set scene size to that
         available_width = self.parent_widget.width() - 70
-        num_cols = max(1, available_width // (self.tile_width + width_pad))
-        num_rows = len(self.file_tile_list) // num_cols
-        if len(self.file_tile_list) % num_cols > 0:
-            num_rows += 1
-        self.file_grid_scene.setSceneRect(0, 0, 
-                num_cols * self.tile_width + (num_cols + 1) * width_pad, 
-                (num_rows+1)*self.tile_height+(num_rows+2)*height_pad)
-    
+        num_cols = max(1, available_width // self.tile_width)
+        total_items = len(self.file_tile_list)
+        num_rows = (total_items + num_cols - 1) // num_cols
         
-        class PaintTileWorker(QRunnable):
-            def __init__(self, 
-                pos_x:int, pos_y:int, tile:FileTile, scene:QGraphicsScene) -> None:
-                self.pos_x = pos_x
-                self.pos_y = pos_y
-                self.tile = tile
-                self.scene = scene
-                super().__init__()
-            def run(self) -> None:
-                self.tile.setPos(self.pos_x, self.pos_y)
-                self.scene.addItem(self.tile)
-                self.tile.update()
-                
+        
+        for item in self.file_grid_scene.items():
+            self.file_grid_scene.removeItem(item)
+        
         row = col = 0
+        
         for tile in self.file_tile_list:
-            x_pos = col * (self.tile_width) + (col+1)*width_pad
-            y_pos = row * (self.tile_height) + (row+1)*height_pad
-            paint_tile_worker = PaintTileWorker(
-                x_pos, y_pos, tile, self.file_grid_scene
-            )
-            self.thread_pool.start(paint_tile_worker)
+            tile.set_ordered_sibling_tiles(self.file_tile_list)
+            tile.setPos(col * (self.tile_width) + (col+1)*width_pad, 
+                        row * (self.tile_height) + (row+1)*height_pad)
+            self.file_grid_scene.addItem(tile)
+            tile.update()
             col += 1
             if col == num_cols:
                 col = 0
                 row += 1
         
+        # resize the scene to eliminate empty space
+        self.file_grid_scene.setSceneRect(0, 0, 
+                num_cols * self.tile_width + (num_cols + 1) * width_pad, 
+                (row+1)*self.tile_height+(row+2)*height_pad)
     
     def compress_selected_files(self):
         """Called when pressing the compress selected files button
@@ -107,6 +93,7 @@ class OutputController(QObject):
         Args:
             files_metadata ([]): List of metadata for files, now need to process and turn into file_tiles
         """
+        thread_pool = QThreadPool()
         
         # dialogue popup setup
         progress_dialog = QProgressDialog(
@@ -126,22 +113,18 @@ class OutputController(QObject):
                 file_metadata, self.tile_width, self.tile_height, file_queue, self.size_type
             )
             file_tile_worker.signals.finished.connect(progress_callback)
-            self.thread_pool.start(file_tile_worker)
+            thread_pool.start(file_tile_worker)
         progress_dialog.exec()
         
-        self.thread_pool.waitForDone()
+        thread_pool.waitForDone()
         
         # empty out our filequeue and sort
         self.file_tile_list = []
         while not file_queue.empty():
             item = file_queue.get()
             self.file_tile_list.append(item)
-            
         self.file_tile_list = sorted(self.file_tile_list, 
                                key=lambda tile: tile.size_bytes, 
                                reverse=True)
-        
-        for tile in self.file_tile_list:
-            tile.set_ordered_sibling_tiles(self.file_tile_list)
     
         self.build_file_table()

@@ -7,6 +7,7 @@ from PyQt6.QtGui import QBrush, QColor
 from controller.output_controller import OutputController
 
 from widgets.file_display_scene_widget import FileDisplayScene
+from widgets.file_grid_view_widget import FileGridView
 
 class OutputWindow(QWidget):
     """Primary class for the right panel
@@ -25,7 +26,7 @@ class OutputWindow(QWidget):
         output_layout = QVBoxLayout()
         self.setLayout(output_layout)
 
-        file_grid_view = QGraphicsView()
+        file_grid_view = FileGridView()
         file_grid_view.setInteractive(True)
         output_layout.addWidget(file_grid_view)
 
