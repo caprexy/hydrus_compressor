@@ -30,6 +30,7 @@ class InputWindow(QWidget):
         conditions_layout.addWidget(file_size_explain_label)
         file_number_box = QSpinBox()
         file_number_box.setValue(10)
+        file_number_box.setMinimum(0)
         conditions_layout.addWidget(file_number_box)
         size_type_box = QComboBox()
         size_type_box.addItem("MB")
@@ -37,14 +38,15 @@ class InputWindow(QWidget):
         conditions_layout.addWidget(size_type_box)
         input_layout.addLayout(conditions_layout)
 
+
+        
         checkbox_layout = QHBoxLayout()
-        file_size_explain_label = QLabel("Get if greater than: ")
         img_checkbox = QCheckBox('Images')
         img_checkbox.setChecked(True)
         checkbox_layout.addWidget(img_checkbox)
         vid_checkbox = QCheckBox('Videos')
         vid_checkbox.setChecked(False)
-        checkbox_layout.addWidget(vid_checkbox)
+        # checkbox_layout.addWidget(vid_checkbox)
         archive_checkbox = QCheckBox('Archive')
         archive_checkbox.setChecked(True)
         checkbox_layout.addWidget(archive_checkbox)
@@ -52,7 +54,7 @@ class InputWindow(QWidget):
         inbox_checkbox.setChecked(False)
         checkbox_layout.addWidget(inbox_checkbox)
         input_layout.addLayout(checkbox_layout)
-        
+                
         get_files_metadata_button.clicked.connect( lambda:
             self.input_controller.get_files_metadata(
                 file_number_box.value(),

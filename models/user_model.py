@@ -3,7 +3,7 @@
 import json
 import os
 
-import constants
+import controller.constants as constants
 
 class UserInfo:
     """Models the user of the program
@@ -36,6 +36,8 @@ class UserInfo:
         Returns:
             _type_: tuple of the hydrus key and api port as (str,int)
         """
+        if self.hydrus_key == None or self.api_port == None:
+            raise ValueError("Missing keys and/or port") 
         return self.hydrus_key, self.api_port
     
     def write_user_data(self)->bool:

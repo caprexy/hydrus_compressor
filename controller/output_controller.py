@@ -1,13 +1,13 @@
 """Is the right side of the primary screen, should deal with calculating everything needed to setup the table for the view
 """
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QProgressDialog 
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtGui import QBrush, QColor
 from queue import Queue
 
 # from models.file_model import FileModel
-from widgets.file_tile_widget import FileTile, FileTileCreatorWorker
-from controller.helpers.file_compressor import compress_file_tiles
+from controller.widgets.file_tile_widget import FileTile, FileTileCreatorWorker
+from controller.widgets.file_compressing_display_widget import FileCompressingProgressWindow
 
 class OutputController(QObject):
     """Calculates anything needed for the output/right view
@@ -25,11 +25,13 @@ class OutputController(QObject):
     def __init__(self,
         parent_widget : QWidget,
         file_grid_scene_in: QGraphicsScene,
-        file_grid_view: QGraphicsView):
+        file_grid_view: QGraphicsView,
+        quality_input_spinbox: QSpinBox):
         super().__init__()
         self.file_grid_scene = file_grid_scene_in
         self.parent_widget = parent_widget
         self.file_grid_view = file_grid_view
+        self.quality_input_spinbox = quality_input_spinbox
         
     def build_file_table(self):
         """Builds the file table based off of the file_list, so can be called any time
@@ -72,9 +74,13 @@ class OutputController(QObject):
     def compress_selected_files(self):
         """Called when pressing the compress selected files button
         """
-        if self.file_grid_scene is None or self.ordered_tiles == []:
+        if self.file_grid_scene is None or self.file_tile_list == []:
             return
-        compress_file_tiles(self.ordered_tiles)
+        
+        selected_file_tiles = [tile for tile in self.file_tile_list if tile.highlight_tile is True]
+        if selected_file_tiles == []:
+            return
+        FileCompressingProgressWindow(selected_file_tiles, self.quality_input_spinbox)
         
     
     def set_file_options(self, 
@@ -93,6 +99,8 @@ class OutputController(QObject):
         Args:
             files_metadata ([]): List of metadata for files, now need to process and turn into file_tiles
         """
+        if files_metadata == [] or files_metadata is None:
+            return None
         thread_pool = QThreadPool()
         
         # dialogue popup setup

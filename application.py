@@ -6,25 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
 
 from view import input_view, output_view
-
-#origin source
-# https://upload.wikimedia.org/wikipedia/commons/7/74/%22I_Got_an_Idea%5E_If_it%27s_Good...I%27ll_Cash_In%22_-_NARA_-_514560_-_retouched.jpg
-# https://commons.wikimedia.org/wiki/Category:Large_images 
-
-
-
-# from PIL import Image
-
-# image = Image.open("origin.jpg")
-
-# # Compress and save the image
-
-# image.save("pil_origin.jpg", optimize=True, quality=85)
-
-#hydrus key c87559638ca2aaebe9ec109248d290d7b96be20d4cbc5479cc7ee555289fa5dd
-# http://localhost:45869/
-# will be diff per user
-import intercontroller_comm
+import controller.intercontroller_comm as intercontroller_comm
 
 class MainApp(QMainWindow):
     """Primary class, uses QT as a base

@@ -49,7 +49,7 @@ class InputController(QObject):
             get_imgs: bool,
             get_vids: bool,
             get_inbox : bool, 
-            get_archive : bool,
+            get_archive : bool
     ):
         """ Once all inputs are given, the get files button is clicked and we pass in all information and display
 
@@ -84,7 +84,6 @@ class InputController(QObject):
             return
 
         self.api_files_metadata = api_file_processor.get_filtered_files_metadata_from_api(tags_list)
-        
         self.get_files_metadata_complete.emit()
         
     def open_config_menu(self):
