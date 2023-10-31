@@ -159,8 +159,13 @@ class FileTile(QGraphicsItem):
         self.file_id = file_metadata["file_id"]
         self.file_type, self.extension = file_metadata["mime"].split("/")
         self.size_bytes = file_metadata["size"]
-        self.display_tags = file_metadata["tags"]["616c6c206b6e6f776e2074616773"] 
+        self.tags = file_metadata["tags"]
+        self.storage_tags = {}
+        self.ratings = file_metadata["ratings"]
+        self.notes = file_metadata["notes"]
         
+        for service_id in self.tags:
+            self.storage_tags[service_id] = self.tags[service_id]["storage_tags"]        
 
 
 class WorkerSignals(QObject):

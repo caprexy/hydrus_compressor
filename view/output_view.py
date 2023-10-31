@@ -42,7 +42,7 @@ class OutputWindow(QWidget):
         quality_input = QSpinBox()
         quality_input.setMinimum(0)
         quality_input.setMaximum(95)
-        quality_input.setValue(85)
+        quality_input.setValue(23)
         saving_opts_layout.addWidget(quality_input)
         output_layout.addLayout(saving_opts_layout)
         

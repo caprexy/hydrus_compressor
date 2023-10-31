@@ -1,6 +1,7 @@
 """Main application function to be called
 """
 import sys
+import os
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
@@ -17,6 +18,10 @@ class MainApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        folder_path = 'temp-images'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            
         self.setWindowTitle("Hydrus Compressor")
         self.setGeometry(1000, 500, 800, 400)
 

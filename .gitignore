@@ -1,6 +1,7 @@
 # Ignore user data
 user_data.json
 personal_user_data.json
+temp-images/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
