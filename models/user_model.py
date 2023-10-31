@@ -35,9 +35,7 @@ class UserInfo:
         """Returns hydrus key and api port
         Returns:
             _type_: tuple of the hydrus key and api port as (str,int)
-        """
-        if self.hydrus_key == None or self.api_port == None:
-            raise ValueError("Missing keys and/or port") 
+        """ 
         return self.hydrus_key, self.api_port
     
     def write_user_data(self)->bool:
@@ -47,27 +45,24 @@ class UserInfo:
         """
         
         if self.hydrus_key is None and self.api_port is None:
-            print("Hdyrus key and api port not set/read!")
-            return False
+            raise ValueError("Hdyrus key and api port not set/read!")
         if self.hydrus_key is None:
-            print("Hydrus key missing or unreadable")
-            return False
+            raise ValueError("Hydrus key missing or unreadable")
         if self.api_port is None:
-            print("Api port missing or unreadable")
-            return False
+            raise ValueError("Api port missing or unreadable")
         try:
             self.api_port = int(self.api_port)
         except ValueError:
-            print("The port value couldnt be coverted into a number")
-            return False
-            
-        with open(constants.USER_DATA_FILE, "w", encoding="utf-8") as json_file:
-            data = {
-                constants.HYDRUS_APIKEY_KEY: self.hydrus_key, 
-                constants.HYDRUS_PORT_KEY : self.api_port
-            }
-            json.dump(data, json_file)
-            return True
+            raise ValueError("The port value couldnt be coverted into a number")
+        try:
+            with open(constants.USER_DATA_FILE, "w", encoding="utf-8") as json_file:
+                data = {
+                    constants.HYDRUS_APIKEY_KEY: self.hydrus_key, 
+                    constants.HYDRUS_PORT_KEY : self.api_port
+                }
+                json.dump(data, json_file)
+        except FileNotFoundError as e:
+            raise e
 
     def read_user_info(self)->(str,int):
         """Method to read the JSON file for user data
@@ -84,10 +79,13 @@ class UserInfo:
                 data = json.load(json_file)
                 self.hydrus_key = str(data[constants.HYDRUS_APIKEY_KEY])
                 self.api_port = data[constants.HYDRUS_PORT_KEY]
-            return data
+                return data
         except FileNotFoundError:
-            print("File not found: ", constants.USER_DATA_FILE)
-            return ("FNF", None)
-        except json.JSONDecodeError as e:
-            print(f"Failed to decode JSON: {e}")
-            return ("FTDJ", None)
+            print("Making new user data file!")
+            json_file = open(constants.USER_DATA_FILE, "w", encoding="utf-8").close()
+            return
+        except json.JSONDecodeError as ex:
+            print("Found a corrupted datafile, making a new one")
+            os.remove(constants.USER_DATA_FILE)
+            open(constants.USER_DATA_FILE, "w", encoding="utf-8").close()
+            raise ex

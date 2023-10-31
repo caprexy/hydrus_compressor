@@ -1,54 +1,76 @@
 """Tests the user model
 """
-
-from unittest.mock import patch, mock_open
 import os
+import json
+import shutil
+
+from pytest import raises
 
 from models.user_model import UserInfo
+import controller.constants as constants
 
-TEST_DATA_FILE_NAME = "test.json"
-
-def test_good_user_json():
+def test_good_user_json(monkeypatch):
     """Tests if can read from a good input/user data json
     """
-    with open("tests\\fake_user_data_files\\good_user_data.json", encoding="utf-8") as json_file:
-        file = json_file
-        
-        with patch("builtins.open", mock_open(read_data=file.read())):
-            user = UserInfo()
-    
+    good_user_file = "good_user_data.json"
+    monkeypatch.setattr(constants, "USER_DATA_FILE",f"tests\\fake_user_data_files\\{good_user_file}")
+    user = UserInfo()
     hy_key, port = user.get_user_info()
 
     assert hy_key == "sdsd"
     assert port == 22
 
-def test_no_user_json():
-    """Tests if bad input should get none back
+def test_no_user_json(monkeypatch):
+    """Tests if no file exists, then create one
     """
-    with patch("constants.USER_DATA_FILE", new="Not a datafile") :
-        user = UserInfo()
-        assert (None, None) == user.get_user_info()
+    temp_user_file = "temp.json"
+    path = f"tests\\fake_user_data_files\\{temp_user_file}"
+    monkeypatch.setattr(constants, "USER_DATA_FILE", path)
 
-def test_bad_user_json():
-    """Tests if bad input should get none back
+    user = UserInfo()
+    assert (None, None) == user.get_user_info()
+    
+    assert os.path.exists(path)
+    os.remove(path)
+
+def test_bad_user_json(monkeypatch):
+    """Tests if bad input should build a new file
     """
-    with patch("constants.USER_DATA_FILE", new="tests\\fake_user_data_files\\bad_user_data.json") :
-
+    bad_user_file_origin = "tests\\fake_user_data_files\\bad_user_data.json"
+    new_path = "tests\\fake_user_data_files\\bad_user_data_temp.json"
+    shutil.copy2(bad_user_file_origin, new_path)
+        
+    monkeypatch.setattr(constants, "USER_DATA_FILE",new_path)
+    
+    with raises(json.decoder.JSONDecodeError):
         user = UserInfo()    
         assert (None, None) == user.get_user_info()
-
-def test_write_user_data():
-    """Attempts to create a user with some fake file name then actually write data.
-    """
-    if os.path.exists(TEST_DATA_FILE_NAME):
-        os.remove(TEST_DATA_FILE_NAME)
-    with patch("constants.USER_DATA_FILE", new=TEST_DATA_FILE_NAME) :
-        user = UserInfo()
-        assert user.write_user_data() is False
-        user.set_user_info("3af",33)
     
+    assert os.path.exists(new_path)
+    os.remove(new_path)
+
+def test_write_user_data(monkeypatch):
+    """Attempts to create a user and write data to it and get it back
+    """
+    TEST_DATA_FILE_NAME = "temp.json"
+    monkeypatch.setattr(constants, "USER_DATA_FILE",TEST_DATA_FILE_NAME)
+     
+    user = UserInfo()
+    with raises(ValueError):
+        user.write_user_data()
+        
+    new_key = "3af"
+    new_port = 33
+    user.set_user_info(new_key,new_port)
+    user.write_user_data()
+
     with open(TEST_DATA_FILE_NAME, encoding="utf-8") as file:
-        file = file.read()
+        file_json = json.load(file)
+    
+    hydrus_key, api_port = user.get_user_info()
+    
+    assert hydrus_key == file_json["hydrus_key"] == new_key
+    assert api_port == file_json["port"] == new_port
     
     if os.path.exists(TEST_DATA_FILE_NAME):
         os.remove(TEST_DATA_FILE_NAME)
@@ -57,21 +79,17 @@ def test_missing_permutations():
     """If by chance somehow we are missing data, want to check that we covered it
     """
     user = UserInfo()
-    user.set_user_info("3af",None)
-    assert user.write_user_data() is False
     
+    with raises(ValueError):
+        user.set_user_info("3af",None)
     
-    user.set_user_info(None, 44)
-    assert user.write_user_data() is False
-    
-    user.set_user_info(None, None)
-    assert user.write_user_data() is False
-    
-    
-    user.set_user_info("5","zz")
-    assert user.write_user_data() is False
+    with raises(ValueError):
+        user.set_user_info(None, 44)
+        
+    with raises(ValueError):    
+        user.set_user_info(None, None)
+        
+    with raises(ValueError):
+        user.set_user_info("5","zz")
     
     user.set_user_info(3, 5)
-    assert user.write_user_data() is True
-    
-    
