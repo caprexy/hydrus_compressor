@@ -58,6 +58,17 @@ class FileTile(QGraphicsItem):
                     self.tile_width, self.text_height)
         self.child_text_box.setParentItem(self)
         self.child_text_box.setPos(0, self.tile_height-self.text_height)
+        
+        # get the thumbnail and build it preemptively
+        pixmap = api_file_processor.get_file_thumbnail(self.file_id)
+        width_factor = self.tile_width / pixmap.width()
+        height_factor = self.image_height / pixmap.height()
+        scaling_factor = min(width_factor, height_factor)
+        self.scaled_pixmap = pixmap.scaled(
+            int(pixmap.width() * scaling_factor),
+            int(pixmap.height() * scaling_factor),
+            Qt.AspectRatioMode.KeepAspectRatio
+        )
 
         
     def paint(self, painter, option, widget=None):
@@ -75,19 +86,10 @@ class FileTile(QGraphicsItem):
         # paint textbox again
         self.child_text_box.setParentItem(self)
         self.child_text_box.setPos(0, self.tile_height-self.text_height)
+        self.child_text_box.update()
         
-        # get the thumbnail and build it
-        pixmap = api_file_processor.get_file_thumbnail(self.file_id)
-        width_factor = self.tile_width / pixmap.width()
-        height_factor = self.image_height / pixmap.height()
-        scaling_factor = min(width_factor, height_factor)
-        scaled_pixmap = pixmap.scaled(
-            int(pixmap.width() * scaling_factor),
-            int(pixmap.height() * scaling_factor),
-            Qt.AspectRatioMode.KeepAspectRatio
-        )
-        x = (self.tile_width - scaled_pixmap.width()) / 2 # center of image at center of tile
-        painter.drawPixmap(int(x), 1, scaled_pixmap)
+        x = (self.tile_width - self.scaled_pixmap.width()) / 2 # center of image at center of tile
+        painter.drawPixmap(int(x), 1, self.scaled_pixmap)
    
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """Overload original

@@ -7,7 +7,6 @@ from PyQt6.QtGui import QBrush, QColor
 from controller.output_controller import OutputController
 
 from controller.widgets.file_display_scene_widget import FileDisplayScene
-from controller.widgets.file_grid_view_widget import FileGridView
 
 class OutputWindow(QWidget):
     """Primary class for the right panel

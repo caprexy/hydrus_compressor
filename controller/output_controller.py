@@ -1,9 +1,11 @@
 """Is the right side of the primary screen, should deal with calculating everything needed to setup the table for the view
 """
+from typing import List
+from queue import Queue
+
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtGui import QBrush, QColor
-from queue import Queue
 
 # from models.file_model import FileModel
 from controller.widgets.file_tile_widget import FileTile, FileTileCreatorWorker
@@ -16,7 +18,7 @@ class OutputController(QObject):
         QObject (_type_): of type qobj so we can borrow the signials and slots mechanisms to pass data between controllers
     """
     file_grid_scene = None
-    file_tile_list = []
+    file_tile_list: List[FileTile] = []
         
     tile_width = 200
     tile_height = 200
@@ -70,6 +72,8 @@ class OutputController(QObject):
         self.file_grid_scene.setSceneRect(0, 0, 
                 num_cols * self.tile_width + (num_cols + 1) * width_pad, 
                 (row+1)*self.tile_height+(row+2)*height_pad)
+
+
     
     def compress_selected_files(self):
         """Called when pressing the compress selected files button
@@ -134,5 +138,4 @@ class OutputController(QObject):
         self.file_tile_list = sorted(self.file_tile_list, 
                                key=lambda tile: tile.size_bytes, 
                                reverse=True)
-    
         self.build_file_table()

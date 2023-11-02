@@ -26,6 +26,7 @@ class FileDisplayScene(QGraphicsScene):
                 if isinstance(item, FileTile):
                     item.highlight_tile = False
                     item.setSelected(False)
+                    item.pivot_tile = False
                     item.update()
             
         return super().mousePressEvent(event)
