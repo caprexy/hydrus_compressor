@@ -6,4 +6,5 @@ pytest-qt
 pytest-cov
 pytest-watch
 pytest-order
+pytest-mock
 coverage

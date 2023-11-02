@@ -2,8 +2,9 @@
 """
 # pylint: disable=E0611
 import typing
+from PyQt6 import QtCore
 from PyQt6.QtCore import QObject, pyqtSignal
-from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout
+from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout, QWidget
 
 from models.user_model import UserInfo
 from controller.helpers import api_file_processor
@@ -76,6 +77,10 @@ class InputController(QObject):
             tags_list.append("system:filetype is image")
         if get_vids:
             tags_list.append("system:filetype is video")
+        if get_inbox:
+            tags_list.append("system:inbox")
+        if get_archive:
+            tags_list.append("system:archive")
         if not get_imgs and not get_vids:
             self.warning("Did not select any media to get")
             return
@@ -89,24 +94,36 @@ class InputController(QObject):
     def open_config_menu(self):
         """Function to be called when making a popup for the config menu
         """
-        config_window = QDialog()
-        config_window.setWindowTitle("Set user information")
+        UserConfigWindow(self.userInfo).exec()
+
+class UserConfigWindow(QDialog):
+    """Made into widget for testing
+
+    Args:
+        QDialog (_type_): inhereited parent
+    """
+    def __init__(self, userInfo) -> None:
+        super().__init__()
+        self.userInfo = userInfo
+        
+        self.setWindowTitle("Set user information")
         config_window_layout = QVBoxLayout()
-        config_window.setLayout(config_window_layout)
+        self.setLayout(config_window_layout)
 
 
         hydrus_key_label = QLabel("Enter the Hydrus API key")
         config_window_layout.addWidget(hydrus_key_label)
-        hydrus_key_input = QLineEdit()
-        config_window_layout.addWidget(hydrus_key_input)
+        self.hydrus_key_input = QLineEdit()
+        config_window_layout.addWidget(self.hydrus_key_input)
 
         api_label = QLabel("Enter the API port")
         config_window_layout.addWidget(api_label)
-        api_input = QLineEdit()
-        config_window_layout.addWidget(api_input)
+        self.api_input = QLineEdit()
+        config_window_layout.addWidget(self.api_input)
         
 
         status_label = QLabel("")
+        self.status_label = status_label
         status_label_basic_styling = "text-align: center; padding: 10px;"
         config_window_layout.addWidget(status_label)
 
@@ -115,17 +132,18 @@ class InputController(QObject):
         # tries to get existing values
         hydrus_key, api_port = self.userInfo.get_user_info()
         if hydrus_key is not None: 
-            hydrus_key_input.setText(hydrus_key)
+            self.hydrus_key_input.setText(hydrus_key)
         if api_port is not None:
-            api_input.setText(str(api_port))
+            self.api_input.setText(str(api_port))
 
         remember_button = QPushButton("Remember these values")
+        self.remember_button = remember_button
         button_layout.addWidget(remember_button)
         def memorize_values():
             """Attempts to memorize the values and error handling for when it goes wrong
             """
-            hydrus_key = hydrus_key_input.text().strip()
-            api_port = api_input.text().strip()
+            hydrus_key = self.hydrus_key_input.text().strip()
+            api_port = self.api_input.text().strip()
             if hydrus_key == "" and api_port == "":
                 status_label.setText("No values set")
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: orange")
@@ -155,11 +173,9 @@ class InputController(QObject):
             status_label.setStyleSheet(status_label_basic_styling+"background-color: red")
         remember_button.clicked.connect(memorize_values)
 
-        close_button = QPushButton('Close', config_window)
-        close_button.clicked.connect(config_window.accept)
+        close_button = QPushButton('Close', self)
+        self.close_button = close_button
+        close_button.clicked.connect(self.accept)
         button_layout.addWidget(close_button)
 
         config_window_layout.addLayout(button_layout)
-
-        config_window.exec()
-        
