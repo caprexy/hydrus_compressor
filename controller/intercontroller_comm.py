@@ -24,8 +24,6 @@ def connect_input_output_controllers(
 def trigger_build_file_grid():
     """Function to pass data from input controller to output controller
     """
-    output_controller_obj.set_file_options(
-        input_controller_obj.size_type
-    )
+    output_controller_obj.size_type = input_controller_obj.size_type
     
     output_controller_obj.process_api_files_metadata(input_controller_obj.api_files_metadata)

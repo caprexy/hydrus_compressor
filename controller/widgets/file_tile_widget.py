@@ -180,6 +180,7 @@ class FileTileCreatorWorker(QRunnable):
     Args:
         QRunnable (_type_): overriden thread type
     """
+    signals = WorkerSignals()
     def __init__(self, 
             file_metadata:{}, 
             tile_width:int, 
@@ -201,7 +202,6 @@ class FileTileCreatorWorker(QRunnable):
         self.tile_height = tile_height
         self.file_queue = file_queue
         self.size_type = size_type
-        self.signals = WorkerSignals()
         
     def run(self) -> None:
         """Overwrites thread run to instead put an filetile object with the given data

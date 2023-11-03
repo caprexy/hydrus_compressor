@@ -2,6 +2,7 @@
 user_data.json
 my_user_data.json
 temp-images/
+hydrus_install/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

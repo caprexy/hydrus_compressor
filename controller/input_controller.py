@@ -102,7 +102,7 @@ class UserConfigWindow(QDialog):
     Args:
         QDialog (_type_): inhereited parent
     """
-    def __init__(self, userInfo) -> None:
+    def __init__(self, userInfo:UserInfo) -> None:
         super().__init__()
         self.userInfo = userInfo
         
@@ -163,14 +163,15 @@ class UserConfigWindow(QDialog):
                 status_label.setText("Need numeric value for port")
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: red")
                 return
-            sucess = self.userInfo.set_user_info(hydrus_key=hydrus_key, api_port=api_port)
-
-            if sucess:
+            try:
+                self.userInfo.set_user_info(hydrus_key=hydrus_key, api_port=api_port)
                 status_label.setText("Values set!")
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: lightgreen")
                 return
-            status_label.setText("Somehow failed")
-            status_label.setStyleSheet(status_label_basic_styling+"background-color: red")
+            except ValueError as error:
+                status_label.setText(error.args[0])
+                status_label.setStyleSheet(status_label_basic_styling+"background-color: red")
+                return
         remember_button.clicked.connect(memorize_values)
 
         close_button = QPushButton('Close', self)

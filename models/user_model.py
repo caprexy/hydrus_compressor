@@ -38,7 +38,7 @@ class UserInfo:
         """ 
         return self.hydrus_key, self.api_port
     
-    def write_user_data(self)->bool:
+    def write_user_data(self):
         """Writes the user data to the user_data.json file
         Returns:
             bool: sucessful or not
