@@ -44,7 +44,7 @@ def test_build_file_table(qtbot, mocker, output_controller:OutputController):
         output_controller (OutputController): output_controller fixture
     """
 
-    SAMPLE_METADATA_FILE = ".\\tests\\fake_user_data_files\\sample_file_metadata.json"
+    SAMPLE_METADATA_FILE = ".\\tests\\fake_user_data_files\\request_metadata_raw.json"
     file_metadata = []
     with open(SAMPLE_METADATA_FILE, "r") as json_file:
         file_metadata = json.load(json_file)
@@ -53,8 +53,8 @@ def test_build_file_table(qtbot, mocker, output_controller:OutputController):
         return QPixmap(50,50)
     mocker.patch('controller.helpers.api_file_processor.get_file_thumbnail', get_file_thumbnail)
     tiles = []
-    for id in file_metadata:
-        tiles.append(FileTile(file_metadata[id], 300, 300, "mb"))
+    for metadata in file_metadata["metadata"]:
+        tiles.append(FileTile(metadata, 300, 300, "mb"))
     output_controller.file_tile_list = tiles
     output_controller.build_file_table()
     for file_tile in output_controller.file_tile_list:
@@ -65,7 +65,7 @@ def test_build_file_table(qtbot, mocker, output_controller:OutputController):
 @pytest.mark.order(3)
 def test_process_api_files_table(qtbot, monkeypatch, mocker, output_controller:OutputController):
     # output_controller.build_file_table()
-    SAMPLE_METADATA_FILE = ".\\tests\\fake_user_data_files\\sample_file_metadata.json"
+    SAMPLE_METADATA_FILE = ".\\tests\\fake_user_data_files\\request_metadata_raw.json"
     file_metadata = []
     with open(SAMPLE_METADATA_FILE, "r") as json_file:
         file_metadata = json.load(json_file)
@@ -91,8 +91,8 @@ def test_process_api_files_table(qtbot, monkeypatch, mocker, output_controller:O
     mocker.patch('controller.helpers.api_file_processor.get_file_thumbnail', get_file_thumbnail)
     
     tiles = []
-    for id in file_metadata:
-        tiles.append(FileTile(file_metadata[id], 300, 300, "mb"))
+    for metadata in file_metadata["metadata"]:
+        tiles.append(FileTile(metadata, 300, 300, "mb"))
     mocker.patch('controller.widgets.file_display_scene_widget.FileDisplayScene', [])
     
     mocker.patch("controller.output_controller.OutputController")

@@ -56,6 +56,7 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
     Args:
         tags (list[str]): list of rules like should be a video, in inbox or archive
     """
+    
     try:
         hydrus_key, api_port  = user_info.get_user_info()
         res = requests.get(
@@ -81,6 +82,7 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
             },
             timeout= 10
         )
+        
         return res.json()[constants.FILE_LIST_METADATA_KEY]
     except ValueError as e:
         warning(e)
