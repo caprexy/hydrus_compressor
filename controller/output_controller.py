@@ -4,13 +4,14 @@ from typing import List
 from queue import Queue
 import json
 
-from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
+from PyQt6.QtCore import QObject, Qt, QThreadPool, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtGui import QBrush, QColor
 
 # from models.file_model import FileModel
 from controller.widgets.file_tile_widget import FileTile, FileTileCreatorWorker
 from controller.widgets.file_compressing_display_widget import FileCompressingProgressWindow
+from controller.widgets.output_settings_widget import OutputSettingsDialog
 
 class OutputController(QObject):
     """Calculates anything needed for the output/right view
@@ -30,12 +31,12 @@ class OutputController(QObject):
         parent_widget : QWidget,
         file_grid_scene_in: QGraphicsScene,
         file_grid_view: QGraphicsView,
-        quality_input_spinbox: QSpinBox):
+        settings_dialog: OutputSettingsDialog):
         super().__init__()
         self.file_grid_scene = file_grid_scene_in
         self.parent_widget = parent_widget
         self.file_grid_view = file_grid_view
-        self.quality_input_spinbox = quality_input_spinbox
+        self.settings_dialog = settings_dialog
         
     def build_file_table(self):
         """Builds the file table based off of the file_list, so can be called any time
@@ -78,7 +79,7 @@ class OutputController(QObject):
         selected_file_tiles = [tile for tile in self.file_tile_list if tile.highlight_tile is True]
         if selected_file_tiles == []:
             return
-        FileCompressingProgressWindow(selected_file_tiles, self.quality_input_spinbox)
+        FileCompressingProgressWindow(selected_file_tiles, self.settings_dialog)
         
     def process_api_files_metadata(self, files_metadata:[])->[FileTile]:
         """ turns file_metadata into filetiles
@@ -110,7 +111,8 @@ class OutputController(QObject):
             )
             file_tile_worker.signals.finished.connect(progress_callback)
             thread_pool.start(file_tile_worker)
-        progress_dialog.exec()
+        progress_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        progress_dialog.show()
         
         thread_pool.waitForDone()
         

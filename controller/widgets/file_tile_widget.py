@@ -165,6 +165,7 @@ class FileTile(QGraphicsItem):
         self.storage_tags = {}
         self.ratings = file_metadata["ratings"]
         self.notes = file_metadata["notes"]
+        self.unix_modified_time = file_metadata["time_modified_details"]["local"]
         
         for service_id in self.tags:
             self.storage_tags[service_id] = self.tags[service_id]["storage_tags"]        

@@ -2,10 +2,11 @@
 """
 import json
 import requests
-from PIL import Image
-from io import BytesIO
+import numpy as np
+import cv2
 from urllib3.exceptions import NewConnectionError
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 import controller.constants as constants
@@ -48,7 +49,8 @@ def warning(reason:str):
     close_button.clicked.connect(warning_window.accept)
     warning_window_layout.addWidget(close_button)
     
-    warning_window.exec()
+    warning_window.setWindowModality(Qt.WindowModality.ApplicationModal)
+    warning_window.show()
     
 def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
     """Actually calls the api given the tags to describe what we want like videos, etc
@@ -58,7 +60,7 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
     """
     
     try:
-        hydrus_key, api_port  = user_info.get_user_info()
+        hydrus_key, api_port  = user_info.get_api_info()
         res = requests.get(
             url=constants.LOCALHOST+str(api_port)+GET_FILE_SEARCH,
             headers={
@@ -107,7 +109,7 @@ def get_file_thumbnail(file_id:str)-> QPixmap:
     Returns:
         QPixmap: pixmap of the thumbnail
     """
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
     res = requests.get(
         url=constants.LOCALHOST+str(api_port)+GET_FILE_THUMBNAIL,
         headers={
@@ -123,7 +125,7 @@ def get_file_thumbnail(file_id:str)-> QPixmap:
     pixmap.loadFromData(res.content) #loading from bytes of contenta
     return pixmap
 
-def get_full_image(file_id:str)-> Image:
+def get_full_image(file_id:str):
     """Grabs a file's full resolution image. Uses API call for now and also uses PIL's image objects
 
     Args:
@@ -134,7 +136,7 @@ def get_full_image(file_id:str)-> Image:
     Returns:
         Image: full sized Image object based on API response
     """
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
     res = requests.get(
         url=constants.LOCALHOST+str(api_port)+GET_FULL_FILE,
         headers={
@@ -145,11 +147,14 @@ def get_full_image(file_id:str)-> Image:
         },
         timeout= 10
     )
-    image = Image.open(BytesIO(res.content))
-    return image
+    
+    img_array = np.frombuffer(res.content, dtype=np.uint8)
+    img = cv2.imdecode(img_array, flags=cv2.IMREAD_COLOR)
+    
+    return img
 
 def send_to_hydrus(file_path: str):
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
     res = requests.post(
         url=constants.LOCALHOST+str(api_port)+POST_FILE,
         headers={
@@ -164,7 +169,7 @@ def send_to_hydrus(file_path: str):
     return res.json()
 
 def add_tags_hash(new_hash, storage_tags):
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
     reformatted_tags = {}
     
     res = requests.get(
@@ -207,7 +212,7 @@ def add_tags_hash(new_hash, storage_tags):
     return res
 
 def add_ratings(new_hash, rating_services):
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
     for service in rating_services:
         res = requests.post(
             url=constants.LOCALHOST+str(api_port)+EDIT_RATINGS,
@@ -224,7 +229,7 @@ def add_ratings(new_hash, rating_services):
     return res
 
 def add_notes(new_hash, notes):
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
 
     res = requests.post(
         url=constants.LOCALHOST+str(api_port)+ADD_NOTES,
@@ -239,7 +244,7 @@ def add_notes(new_hash, notes):
     )
 
 def delete_file(file_id):
-    hydrus_key, api_port = user_info.get_user_info()
+    hydrus_key, api_port = user_info.get_api_info()
     
     res = requests.post(
         url=constants.LOCALHOST+str(api_port)+DELETE_FILE,

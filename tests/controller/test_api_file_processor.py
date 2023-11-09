@@ -12,7 +12,7 @@ def mock_user_info():
     class FakeUserInfo(UserInfo):
         def __init__(self):
             pass
-        def get_user_info(self) -> (str, int):
+        def get_api_info(self) -> (str, int):
             return ("1",2)
     api_file_processor.set_user_info(FakeUserInfo())
 

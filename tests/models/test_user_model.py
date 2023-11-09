@@ -15,7 +15,7 @@ def test_good_user_json(monkeypatch):
     good_user_file = "good_user_data.json"
     monkeypatch.setattr(constants, "USER_DATA_FILE",f"tests\\fake_user_data_files\\{good_user_file}")
     user = UserInfo()
-    hy_key, port = user.get_user_info()
+    hy_key, port = user.get_api_info()
 
     assert hy_key == "sdsd"
     assert port == 22
@@ -28,7 +28,7 @@ def test_no_user_json(monkeypatch):
     monkeypatch.setattr(constants, "USER_DATA_FILE", path)
 
     user = UserInfo()
-    assert (None, None) == user.get_user_info()
+    assert (None, None) == user.get_api_info()
     
     assert os.path.exists(path)
     os.remove(path)
@@ -44,7 +44,7 @@ def test_bad_user_json(monkeypatch):
     
     with raises(json.decoder.JSONDecodeError):
         user = UserInfo()    
-        assert (None, None) == user.get_user_info()
+        assert (None, None) == user.get_api_info()
     
     assert os.path.exists(new_path)
     os.remove(new_path)
@@ -54,7 +54,7 @@ def test_write_user_data(monkeypatch):
     """
     TEST_DATA_FILE_NAME = "temp.json"
     monkeypatch.setattr(constants, "USER_DATA_FILE",TEST_DATA_FILE_NAME)
-     
+    
     user = UserInfo()
     with raises(ValueError):
         user.write_user_data()
@@ -67,7 +67,7 @@ def test_write_user_data(monkeypatch):
     with open(TEST_DATA_FILE_NAME, encoding="utf-8") as file:
         file_json = json.load(file)
     
-    hydrus_key, api_port = user.get_user_info()
+    hydrus_key, api_port = user.get_api_info()
     
     assert hydrus_key == file_json["hydrus_key"] == new_key
     assert api_port == file_json["port"] == new_port

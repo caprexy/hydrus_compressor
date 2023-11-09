@@ -7,6 +7,7 @@ from PyQt6.QtGui import QBrush, QColor
 from controller.output_controller import OutputController
 
 from controller.widgets.file_display_scene_widget import FileDisplayScene
+from controller.widgets.output_settings_widget import OutputSettingsDialog
 
 class OutputWindow(QWidget):
     """Primary class for the right panel
@@ -35,15 +36,12 @@ class OutputWindow(QWidget):
         file_grid_view.setScene(file_grid_scene)
         file_grid_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         
-        saving_opts_layout = QHBoxLayout()
-        quality_label = QLabel("Compressed Image quality: ")
-        saving_opts_layout.addWidget(quality_label)
-        quality_input = QSpinBox()
-        quality_input.setMinimum(0)
-        quality_input.setMaximum(95)
-        quality_input.setValue(23)
-        saving_opts_layout.addWidget(quality_input)
-        output_layout.addLayout(saving_opts_layout)
+        open_settings = QPushButton("Open image compression settings")
+        output_layout.addWidget(open_settings)
+        settings_dialog = OutputSettingsDialog()
+        def open_settings_widget():
+            settings_dialog.show()
+        open_settings.clicked.connect(open_settings_widget)
         
         compress_button = QPushButton("Compress selected files")
         output_layout.addWidget(compress_button)
@@ -52,7 +50,7 @@ class OutputWindow(QWidget):
             self,
             file_grid_scene,
             file_grid_view,
-            quality_input
+            settings_dialog
         )
         compress_button.clicked.connect(self.output_controller.compress_selected_files)
 

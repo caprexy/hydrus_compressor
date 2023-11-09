@@ -28,7 +28,7 @@ def input_controller():
     
     input = InputController()
     
-    hy_key, port = api_file_processor.user_info.get_user_info() 
+    hy_key, port = api_file_processor.user_info.get_api_info() 
     
     assert hy_key == INITAL_HY_KEY
     assert port == INITAL_API_PORT

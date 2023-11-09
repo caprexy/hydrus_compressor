@@ -3,7 +3,7 @@
 # pylint: disable=E0611
 import typing
 from PyQt6 import QtCore
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout, QWidget
 
 from models.user_model import UserInfo
@@ -19,7 +19,7 @@ class InputController(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.userInfo = UserInfo()
-        if self.userInfo.get_user_info() == (None, None):
+        if self.userInfo.get_api_info() == (None, None):
             self.warning("Couldnt get your info. Please enter in settings!")
         api_file_processor.set_user_info(self.userInfo)
             
@@ -42,15 +42,16 @@ class InputController(QObject):
         close_button.clicked.connect(warning_window.accept)
         warning_window_layout.addWidget(close_button)
         
-        warning_window.exec()
+        warning_window.setWindowModality(Qt.WindowModality.ApplicationModal)
+        warning_window.show()
 
     def get_files_metadata(self, 
             max_file_size: int,
             size_type: str,
             get_imgs: bool,
             get_vids: bool,
+            get_archive : bool,
             get_inbox : bool, 
-            get_archive : bool
     ):
         """ Once all inputs are given, the get files button is clicked and we pass in all information and display
 
@@ -77,9 +78,11 @@ class InputController(QObject):
             tags_list.append("system:filetype is image")
         if get_vids:
             tags_list.append("system:filetype is video")
-        if get_inbox:
+        if get_archive and get_inbox:
+            tags_list.append("system:everything")
+        elif get_inbox:
             tags_list.append("system:inbox")
-        if get_archive:
+        elif get_archive:
             tags_list.append("system:archive")
         if not get_imgs and not get_vids:
             self.warning("Did not select any media to get")
@@ -94,7 +97,7 @@ class InputController(QObject):
     def open_config_menu(self):
         """Function to be called when making a popup for the config menu
         """
-        UserConfigWindow(self.userInfo).exec()
+        UserConfigWindow(self.userInfo).show()
 
 class UserConfigWindow(QDialog):
     """Made into widget for testing
@@ -105,7 +108,8 @@ class UserConfigWindow(QDialog):
     def __init__(self, userInfo:UserInfo) -> None:
         super().__init__()
         self.userInfo = userInfo
-        
+        self.setModal(True)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.setWindowTitle("Set user information")
         config_window_layout = QVBoxLayout()
         self.setLayout(config_window_layout)
@@ -130,7 +134,7 @@ class UserConfigWindow(QDialog):
         button_layout = QHBoxLayout()
         
         # tries to get existing values
-        hydrus_key, api_port = self.userInfo.get_user_info()
+        hydrus_key, api_port = self.userInfo.get_api_info()
         if hydrus_key is not None: 
             self.hydrus_key_input.setText(hydrus_key)
         if api_port is not None:
