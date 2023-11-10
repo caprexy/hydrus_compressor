@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
 
 from view import input_view, output_view
 import controller.intercontroller_comm as intercontroller_comm
+import models.settings as settings
 
 class MainApp(QMainWindow):
     """Primary class, uses QT as a base
@@ -22,6 +23,8 @@ class MainApp(QMainWindow):
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
             
+        settings.read_user_json()
+        
         self.setWindowTitle("Hydrus Compressor")
         self.setGeometry(1000, 500, 800, 400)
 

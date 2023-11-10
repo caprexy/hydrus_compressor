@@ -8,7 +8,6 @@ from PyQt6.QtCore import QObject, Qt, QThreadPool, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtGui import QBrush, QColor
 
-# from models.file_model import FileModel
 from controller.widgets.file_tile_widget import FileTile, FileTileCreatorWorker
 from controller.widgets.file_compressing_display_widget import FileCompressingProgressWindow
 from controller.widgets.output_settings_widget import OutputSettingsDialog

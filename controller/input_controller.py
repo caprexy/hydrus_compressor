@@ -6,7 +6,7 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout, QWidget
 
-from models.user_model import UserInfo
+import models.settings as settings
 from controller.helpers import api_file_processor
 
 class InputController(QObject):
@@ -18,10 +18,8 @@ class InputController(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self.userInfo = UserInfo()
-        if self.userInfo.get_api_info() == (None, None):
+        if settings.get_api_info() == (None, None):
             self.warning("Couldnt get your info. Please enter in settings!")
-        api_file_processor.set_user_info(self.userInfo)
             
     def warning(self, reason:str):
         """Creates a warning popup with given reason
@@ -97,7 +95,7 @@ class InputController(QObject):
     def open_config_menu(self):
         """Function to be called when making a popup for the config menu
         """
-        UserConfigWindow(self.userInfo).show()
+        UserConfigWindow().show()
 
 class UserConfigWindow(QDialog):
     """Made into widget for testing
@@ -105,9 +103,8 @@ class UserConfigWindow(QDialog):
     Args:
         QDialog (_type_): inhereited parent
     """
-    def __init__(self, userInfo:UserInfo) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.userInfo = userInfo
         self.setModal(True)
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.setWindowTitle("Set user information")
@@ -134,7 +131,7 @@ class UserConfigWindow(QDialog):
         button_layout = QHBoxLayout()
         
         # tries to get existing values
-        hydrus_key, api_port = self.userInfo.get_api_info()
+        hydrus_key, api_port = settings.get_api_info()
         if hydrus_key is not None: 
             self.hydrus_key_input.setText(hydrus_key)
         if api_port is not None:
@@ -168,7 +165,7 @@ class UserConfigWindow(QDialog):
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: red")
                 return
             try:
-                self.userInfo.set_user_info(hydrus_key=hydrus_key, api_port=api_port)
+                settings.set_api_info(hydrus_key=hydrus_key, api_port=api_port)
                 status_label.setText("Values set!")
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: lightgreen")
                 return

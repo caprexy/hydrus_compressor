@@ -68,7 +68,7 @@ class UserInfo:
         except ValueError:
             raise ValueError("The port value couldnt be coverted into a number")
         
-        self.api_opts["hydrus_key"] = hydrus_key
+        self.api_opts["hydrus_key"] = str(hydrus_key)
         self.api_opts["api_port"] = api_port
         return self.write_user_data()
 
@@ -77,7 +77,7 @@ class UserInfo:
         Returns:
             _type_: tuple of the hydrus key and api port as (str,int)
         """ 
-        return self.api_opts["hydrus_key"], self.api_opts["api_port"]
+        return str(self.api_opts["hydrus_key"]), self.api_opts["api_port"]
     
     def write_user_data(self):
         """Writes the user data/all known and saved data to the user_data.json file
@@ -105,8 +105,7 @@ class UserInfo:
             with open(constants.USER_DATA_FILE, "r", encoding="utf-8") as json_file:
                 file_size = os.path.getsize(constants.USER_DATA_FILE)
                 if file_size == 0:
-                    print("The file is empty.")
-                    return ("TFIE", None)
+                    raise FileNotFoundError
                 data = json.load(json_file)
         except FileNotFoundError:
             print("Making new user data file!")

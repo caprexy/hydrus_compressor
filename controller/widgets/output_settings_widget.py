@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QWidget, QComboBox, QGridLayout, QDialog ,QButtonGro
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor
 
-from models.user_model import UserInfo
+import models.settings as settings
 
 class PercentageWidget(QWidget):
     pass
@@ -17,7 +17,6 @@ class OutputSettingsDialog(QDialog):
         super().__init__()
         
         # get the user_model and grab options from there
-        user_info = UserInfo()
         layout = QVBoxLayout()
         self.setLayout(layout)
         
@@ -28,9 +27,9 @@ class OutputSettingsDialog(QDialog):
         quality_input = QSpinBox()
         quality_input.setMinimum(0)
         quality_input.setMaximum(95)
-        quality_input.setValue(user_info.get_compressed_img_quality())
+        quality_input.setValue(settings.compressed_img_quality)
         def update_img_quality(new_val):
-            user_info.set_compressed_img_quality(new_val)
+            settings.compressed_img_quality = new_val
         quality_input.valueChanged.connect(update_img_quality)
         quality_layout.addWidget(quality_input)
         self.quality_input = quality_input
@@ -38,22 +37,22 @@ class OutputSettingsDialog(QDialog):
         
         # resize checkbox
         resize_checkbox = QCheckBox("Resize?")
-        resize_checkbox.setChecked(user_info.get_should_resize())
+        resize_checkbox.setChecked(settings.should_resize)
         def update_should_resize(new_val):
-            user_info.set_should_resize(new_val)
+            settings.should_resize = new_val
         resize_checkbox.stateChanged.connect(update_should_resize)
         layout.addWidget(resize_checkbox)
         
         parent_resize_widget = QWidget()
         resize_layout = QVBoxLayout()
         parent_resize_widget.setLayout(resize_layout)
-        def set_resize_visiblility(should):
+        def resize_visiblility(should):
             if should == False:
                 parent_resize_widget.hide()
                 return
             parent_resize_widget.show()
-        set_resize_visiblility(user_info.get_should_resize())
-        resize_checkbox.stateChanged.connect(set_resize_visiblility)
+        resize_visiblility(settings.should_resize)
+        resize_checkbox.stateChanged.connect(resize_visiblility)
                 
         # in percentage or pixels radio group
         per_or_pix_layout = QHBoxLayout()
@@ -63,13 +62,13 @@ class OutputSettingsDialog(QDialog):
         button_group.addButton(pixels_button, 1)
         button_group.addButton(percentage_button, 2)
         def percentage_button_clicked():
-            user_info.set_should_resize_by_percentage(True)
+            settings.should_resize_by_percentage = True
         def pixel_button_clicked():
-            user_info.set_should_resize_by_percentage(False)
+            settings.should_resize_by_percentage = False
         percentage_button.clicked.connect(percentage_button_clicked)
         pixels_button.clicked.connect(pixel_button_clicked)
-        percentage_button.setChecked(user_info.get_should_resize_by_percentage())
-        pixels_button.setChecked(not user_info.get_should_resize_by_percentage())
+        percentage_button.setChecked(settings.should_resize_by_percentage)
+        pixels_button.setChecked(not settings.should_resize_by_percentage)
         self.percentage_button = percentage_button
         
         per_or_pix_layout.addWidget(pixels_button)
@@ -77,12 +76,12 @@ class OutputSettingsDialog(QDialog):
         resize_layout.addLayout(per_or_pix_layout)
 
         # resize by pixels widget
-        pixels_widget = PixelsWidget(user_info)
+        pixels_widget = PixelsWidget()
         self.pixels_widget = pixels_widget
         resize_layout.addWidget(pixels_widget)
         
         # resize by percentage widget
-        percentage_widget = PercentageWidget(user_info)
+        percentage_widget = PercentageWidget()
         self.percentage_widget = percentage_widget
         resize_layout.addWidget(percentage_widget)
         
@@ -95,11 +94,11 @@ class OutputSettingsDialog(QDialog):
             pixels_widget.hide()
             percentage_widget.show()
         pixels_button.toggled.connect(toggle_pixels)
-        toggle_pixels(not user_info.get_should_resize_by_percentage())
+        toggle_pixels(not settings.should_resize_by_percentage)
         
         layout.addWidget(parent_resize_widget)
         
-    def get_settings(self):
+    def settings(self):
         compression_level = self.quality_input.value()
         use_percentage = self.percentage_button.isChecked()
         resize_percentage = self.percentage_widget.percentage_spinbox.value()
@@ -111,7 +110,7 @@ class OutputSettingsDialog(QDialog):
 class PercentageWidget(QWidget):
     """This widget will hold all the options if resizing by percentage
     """
-    def __init__(self, user_info: UserInfo) -> None:
+    def __init__(self) -> None:
         super().__init__()
         
         percentage_layout = QVBoxLayout(self)
@@ -123,9 +122,9 @@ class PercentageWidget(QWidget):
         percentage_spinbox = QSpinBox()
         percentage_spinbox.setMinimum(1)
         percentage_spinbox.setMaximum(1000)
-        percentage_spinbox.setValue(user_info.get_resize_percentage())
+        percentage_spinbox.setValue(settings.resize_by_percentage)
         def update_resize_percentage(new_val):
-            user_info.set_resize_percentage(new_val)
+            settings.resize_by_percentage = new_val
         percentage_spinbox.valueChanged.connect(update_resize_percentage)
         percentage_spin_layout.addWidget(percentage_spinbox)
         percentagle_label = QLabel("%")
@@ -138,7 +137,7 @@ class PercentageWidget(QWidget):
 class PixelsWidget(QWidget):
     """If resizing by pixels, then here are the possible options
     """
-    def __init__(self, user_info: UserInfo) -> None:
+    def __init__(self) -> None:
         super().__init__()
         pixels_layout = QGridLayout(self)
         
@@ -149,9 +148,9 @@ class PixelsWidget(QWidget):
         height_spinbox = QSpinBox()
         height_spinbox.setMinimum(1)
         height_spinbox.setMaximum(10000)
-        height_spinbox.setValue(int(user_info.get_resize_pixel_height()))
+        height_spinbox.setValue(int(settings.resize_by_pixel_height))
         def update_resize_pixel_height(new_val):
-            user_info.set_resize_pixel_height(new_val)
+            settings.resize_by_pixel_height = new_val
         height_spinbox.valueChanged.connect(update_resize_pixel_height)
         pixels_layout.addWidget(height_spinbox, row, 1)
         self.height_spinbox = height_spinbox
@@ -163,9 +162,9 @@ class PixelsWidget(QWidget):
         width_spinbox = QSpinBox()
         width_spinbox.setMinimum(1)
         width_spinbox.setMaximum(10000)
-        width_spinbox.setValue(int(user_info.get_resize_pixel_width()))
+        width_spinbox.setValue(int(settings.resize_by_pixel_width))
         def update_resize_pixel_width(new_val):
-            user_info.set_resize_pixel_width(new_val)
+            settings.resize_by_pixel_width = new_val
         height_spinbox.valueChanged.connect(update_resize_pixel_width)
         pixels_layout.addWidget(width_spinbox, row, 1)
         self.width_spinbox = width_spinbox
@@ -179,7 +178,7 @@ class PixelsWidget(QWidget):
                 "3840 x 2160"
             ])
         
-        def set_res(chosen_text):
+        def res(chosen_text):
             if chosen_text[0] == "<":
                 return
             w,h = chosen_text.split(" x ")
@@ -189,7 +188,7 @@ class PixelsWidget(QWidget):
             height_spinbox.setValue(h)
             update_resize_pixel_width(w)
             width_spinbox.setValue(w)
-        res_combobox.textActivated.connect(set_res)
+        res_combobox.textActivated.connect(res)
         pixels_layout.addWidget(res_combobox, row, 0, 2,  1, Qt.AlignmentFlag.AlignCenter)
         self.hide()
         

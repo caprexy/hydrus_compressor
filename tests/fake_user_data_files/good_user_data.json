@@ -1,1 +1,16 @@
-{"hydrus_key": "sdsd", "port": 22}
+{
+    "api_opts": {
+      "hydrus_key": "3a",
+      "api_port": 5
+    },
+    "compression_opts": {
+      "compressed_img_quality": 93
+    },
+    "resize_opts": {
+      "should_resize": 2,
+      "should_resize_by_percentage": false,
+      "resize_by_percentage": 75,
+      "resize_by_pixel_height": 2160,
+      "resize_by_pixel_width": 3840
+    }
+}

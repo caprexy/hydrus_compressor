@@ -10,10 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 import controller.constants as constants
-
-from models.user_model import UserInfo
-
-user_info = None
+import models.settings as settings
 
 # API endpoints
 GET_FILE_SEARCH = "/get_files/search_files"
@@ -25,10 +22,6 @@ ADD_TAGS = "/add_tags/add_tags"
 DELETE_FILE = "/add_files/delete_files"
 EDIT_RATINGS = "/edit_ratings/set_rating"
 ADD_NOTES = "/add_notes/set_notes"
-
-def set_user_info(user_info_in: UserInfo):
-    global user_info
-    user_info = user_info_in
 
 def warning(reason:str):
     """Creates a warning popup with given reason
@@ -60,7 +53,7 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
     """
     
     try:
-        hydrus_key, api_port  = user_info.get_api_info()
+        hydrus_key, api_port  = settings.get_api_info()
         res = requests.get(
             url=constants.LOCALHOST+str(api_port)+GET_FILE_SEARCH,
             headers={
@@ -109,7 +102,7 @@ def get_file_thumbnail(file_id:str)-> QPixmap:
     Returns:
         QPixmap: pixmap of the thumbnail
     """
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
     res = requests.get(
         url=constants.LOCALHOST+str(api_port)+GET_FILE_THUMBNAIL,
         headers={
@@ -136,7 +129,7 @@ def get_full_image(file_id:str):
     Returns:
         Image: full sized Image object based on API response
     """
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
     res = requests.get(
         url=constants.LOCALHOST+str(api_port)+GET_FULL_FILE,
         headers={
@@ -154,7 +147,7 @@ def get_full_image(file_id:str):
     return img
 
 def send_to_hydrus(file_path: str):
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
     res = requests.post(
         url=constants.LOCALHOST+str(api_port)+POST_FILE,
         headers={
@@ -169,7 +162,7 @@ def send_to_hydrus(file_path: str):
     return res.json()
 
 def add_tags_hash(new_hash, storage_tags):
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
     reformatted_tags = {}
     
     res = requests.get(
@@ -212,7 +205,7 @@ def add_tags_hash(new_hash, storage_tags):
     return res
 
 def add_ratings(new_hash, rating_services):
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
     for service in rating_services:
         res = requests.post(
             url=constants.LOCALHOST+str(api_port)+EDIT_RATINGS,
@@ -229,7 +222,7 @@ def add_ratings(new_hash, rating_services):
     return res
 
 def add_notes(new_hash, notes):
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
 
     res = requests.post(
         url=constants.LOCALHOST+str(api_port)+ADD_NOTES,
@@ -244,7 +237,7 @@ def add_notes(new_hash, notes):
     )
 
 def delete_file(file_id):
-    hydrus_key, api_port = user_info.get_api_info()
+    hydrus_key, api_port = settings.get_api_info()
     
     res = requests.post(
         url=constants.LOCALHOST+str(api_port)+DELETE_FILE,
