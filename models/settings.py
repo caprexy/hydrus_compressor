@@ -10,6 +10,11 @@ import controller.constants as constants
 Stores the key for hydrus api and the according port number
 Stores other program settings
 """
+
+
+# name/path of the user datafile
+USER_DATA_FILE = "user_data.json" # if changed, add to gitignore
+
 # api settings
 hydrus_key = None
 api_port = None
@@ -60,6 +65,12 @@ def get_api_info()->(str,int):
     Returns:
         _type_: tuple of the hydrus key and api port as (str,int)
     """ 
+    if api_port == None and hydrus_key == None:
+        raise ValueError("Missing both api port and hydrus key in settings")
+    if hydrus_key == None:
+        raise ValueError("Missing hydrus key")
+    if api_port == None:
+        raise ValueError("Missing api port")
     return str(hydrus_key), int(api_port)
 
 def write_user_data():
@@ -68,7 +79,7 @@ def write_user_data():
         bool: sucessful or not
     """
     try:
-        with open(constants.USER_DATA_FILE, "w", encoding="utf-8") as json_file:
+        with open(USER_DATA_FILE, "w", encoding="utf-8") as json_file:
             data = {
                 "api_opts" : {
                         "hydrus_key" : hydrus_key,
@@ -98,19 +109,19 @@ def read_user_json()->(str,int):
     Otherwise wil return (reason for error: str, None)
     """
     try:
-        with open(constants.USER_DATA_FILE, "r", encoding="utf-8") as json_file:
-            file_size = os.path.getsize(constants.USER_DATA_FILE)
+        with open(USER_DATA_FILE, "r", encoding="utf-8") as json_file:
+            file_size = os.path.getsize(USER_DATA_FILE)
             if file_size == 0:
                 raise FileNotFoundError
             data = json.load(json_file)
     except FileNotFoundError:
         print("Making new user data file!")
-        json_file = open(constants.USER_DATA_FILE, "w", encoding="utf-8").close()
+        json_file = open(USER_DATA_FILE, "w", encoding="utf-8").close()
         return
     except json.JSONDecodeError as ex:
         print("Found a corrupted datafile, making a new one")
-        os.remove(constants.USER_DATA_FILE)
-        open(constants.USER_DATA_FILE, "w", encoding="utf-8").close()
+        os.remove(USER_DATA_FILE)
+        open(USER_DATA_FILE, "w", encoding="utf-8").close()
         raise ex
     
     # parse the data/json abd turn them into vars

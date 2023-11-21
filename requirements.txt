@@ -1,6 +1,5 @@
 requests
 PyQt6
-Pillow
 pytest
 pytest-qt
 pytest-cov
@@ -8,3 +7,4 @@ pytest-watch
 pytest-order
 pytest-mock
 coverage
+opencv-python

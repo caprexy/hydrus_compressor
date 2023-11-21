@@ -97,6 +97,7 @@ class OutputController(QObject):
             0,
             len(files_metadata)
         )
+        progress_dialog.setWindowTitle("Requesting from hydrus")
         progress_dialog.setValue(0)
         def progress_callback():
             progress_dialog.setValue(progress_dialog.value()+1)

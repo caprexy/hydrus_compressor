@@ -18,9 +18,11 @@ class InputController(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        if settings.get_api_info() == (None, None):
-            self.warning("Couldnt get your info. Please enter in settings!")
-            
+        try:
+            settings.get_api_info()
+        except ValueError as e:
+            self.warning(f"Couldnt get your info, check settings: {e}")
+        
     def warning(self, reason:str):
         """Creates a warning popup with given reason
 
@@ -40,8 +42,8 @@ class InputController(QObject):
         close_button.clicked.connect(warning_window.accept)
         warning_window_layout.addWidget(close_button)
         
-        warning_window.setWindowModality(Qt.WindowModality.ApplicationModal)
-        warning_window.show()
+        warning_window.exec()
+        return warning_window
 
     def get_files_metadata(self, 
             max_file_size: int,
@@ -71,6 +73,12 @@ class InputController(QObject):
         tags_list = [
                 "system:filesize > "+str(max_file_size) + " "+ size_type,
                 ]
+        
+        try:
+            hydrus_key, api_port = settings.get_api_info()
+        except ValueError as e:
+            self.warning(str(e))
+            return
         
         if get_imgs:
             tags_list.append("system:filetype is image")
@@ -131,11 +139,15 @@ class UserConfigWindow(QDialog):
         button_layout = QHBoxLayout()
         
         # tries to get existing values
-        hydrus_key, api_port = settings.get_api_info()
-        if hydrus_key is not None: 
-            self.hydrus_key_input.setText(hydrus_key)
-        if api_port is not None:
-            self.api_input.setText(str(api_port))
+        hydrus_key, api_port = None, None
+        try:
+            hydrus_key, api_port = settings.get_api_info()
+            if hydrus_key is not None: 
+                self.hydrus_key_input.setText(hydrus_key)
+            if api_port is not None:
+                self.api_input.setText(str(api_port))
+        except ValueError as e:
+            pass
 
         remember_button = QPushButton("Remember these values")
         self.remember_button = remember_button
@@ -165,7 +177,7 @@ class UserConfigWindow(QDialog):
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: red")
                 return
             try:
-                settings.set_api_info(hydrus_key=hydrus_key, api_port=api_port)
+                settings.set_api_info(hydrus_key_in=hydrus_key, api_port_in=api_port)
                 status_label.setText("Values set!")
                 status_label.setStyleSheet(status_label_basic_styling+"background-color: lightgreen")
                 return

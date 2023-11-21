@@ -3,8 +3,8 @@
 """
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import  QGraphicsSceneMouseEvent, QGraphicsWidget, QGraphicsRectItem, QGraphicsItem
-from PyQt6.QtCore import  Qt, QRectF, QEvent, QRunnable, pyqtSignal, QObject
-from PyQt6.QtGui import  QColor, QBrush, QPainterPath
+from PyQt6.QtCore import  Qt, QLine, QRectF, QEvent, QRunnable, pyqtSignal, QObject
+from PyQt6.QtGui import  QColor, QBrush, QPainterPath, QPen
 from queue import Queue
 
 from controller.helpers import api_file_processor
@@ -82,6 +82,15 @@ class FileTile(QGraphicsItem):
             color = self.tile_background_color
         painter.setBrush(QBrush(color))
         painter.drawRect(0, 0, self.tile_width, self.tile_height)
+        
+        # paint outline if selected
+        if self.highlight_tile:
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            pen = QPen(Qt.GlobalColor.blue)
+            pen.setWidth(5)
+            pen.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
+            painter.setPen(pen)
+            painter.drawRect(0, 0, self.tile_width, self.tile_height)
         
         # paint textbox again
         self.child_text_box.setParentItem(self)

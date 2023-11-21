@@ -1,8 +1,6 @@
 """Primary constants to be used throughout program
 """
 
-USER_DATA_FILE = "user_data.json" # if changed, add to gitignore
-
 HYDRUS_APIKEY_PARAM = "Hydrus-Client-API-Access-Key"
 
 LOCALHOST="http://localhost:"

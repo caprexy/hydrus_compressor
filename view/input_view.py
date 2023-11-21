@@ -43,7 +43,7 @@ class InputWindow(QWidget):
         checkbox_layout = QHBoxLayout()
         img_checkbox = QCheckBox('Images')
         img_checkbox.setChecked(True)
-        checkbox_layout.addWidget(img_checkbox)
+        # checkbox_layout.addWidget(img_checkbox)
         vid_checkbox = QCheckBox('Videos')
         vid_checkbox.setChecked(False)
         # checkbox_layout.addWidget(vid_checkbox)

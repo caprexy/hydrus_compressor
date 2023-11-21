@@ -8,7 +8,7 @@ from urllib3.exceptions import NewConnectionError
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication, QPushButton
 import controller.constants as constants
 import models.settings as settings
 
@@ -23,11 +23,12 @@ DELETE_FILE = "/add_files/delete_files"
 EDIT_RATINGS = "/edit_ratings/set_rating"
 ADD_NOTES = "/add_notes/set_notes"
 
-def warning(reason:str):
+def warning(reason:str, exec=True):
     """Creates a warning popup with given reason
 
     Args:
         reason (str): Text to be put into warning box
+        exec (bool): if to use exec or open
     """
     warning_window = QDialog()
     warning_window.setWindowTitle("Warning!!!!!")
@@ -42,15 +43,21 @@ def warning(reason:str):
     close_button.clicked.connect(warning_window.accept)
     warning_window_layout.addWidget(close_button)
     
-    warning_window.setWindowModality(Qt.WindowModality.ApplicationModal)
-    warning_window.show()
-    
+    if exec:
+        warning_window.exec()
+    else:
+        warning_window.setWindowModality(Qt.WindowModality.ApplicationModal)
+        warning_window.open()
+    return warning_window
+
 def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
     """Actually calls the api given the tags to describe what we want like videos, etc
 
     Args:
         tags (list[str]): list of rules like should be a video, in inbox or archive
     """
+    warning_window = warning("Getting files", exec=False)
+    QApplication.processEvents()
     
     try:
         hydrus_key, api_port  = settings.get_api_info()
@@ -62,7 +69,7 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
             params={
                 "tags" : json.dumps(tags_list)
             },
-            timeout= 10
+            timeout= 5
         )
         file_ids = res.json()[constants.FILE_ID_JSON_KEY]
         
@@ -75,19 +82,20 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
                 constants.FILE_ID_JSON_KEY : json.dumps(file_ids),
                 "include_notes" : "true",
             },
-            timeout= 10
+            timeout= 5
         )
         
         return res.json()[constants.FILE_LIST_METADATA_KEY]
     except ValueError as e:
         warning(e)
     except requests.exceptions.ConnectionError as e:
-        warning("Is hydrus running and api key/port set?")
+        warning("Is hydrus running?")
     except KeyError as e:
         warning("Nothing found for the given settings")
     except Exception as e:
         print("Caught an exception of type:", type(e).__name__, f" and error message: {e}")
-        
+    finally:
+        warning_window.close()
     return None
         
 

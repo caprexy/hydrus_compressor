@@ -98,7 +98,7 @@ class OutputSettingsDialog(QDialog):
         
         layout.addWidget(parent_resize_widget)
         
-    def settings(self):
+    def get_settings(self):
         compression_level = self.quality_input.value()
         use_percentage = self.percentage_button.isChecked()
         resize_percentage = self.percentage_widget.percentage_spinbox.value()
