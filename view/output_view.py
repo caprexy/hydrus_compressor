@@ -1,4 +1,4 @@
-"""Right panel where the output/found files should be displayed
+"""Right panel where the output/found files should be displayed.
 """
     
 from PyQt6.QtWidgets import QHBoxLayout, QWidget, QVBoxLayout, QGraphicsView, QLabel, QPushButton, QSpinBox

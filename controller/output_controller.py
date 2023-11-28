@@ -1,4 +1,4 @@
-"""Is the right side of the primary screen, should deal with calculating everything needed to setup the table for the view
+"""Is the right side of the primary screen, should deal with calculating everything needed to display the table for the view.
 """
 from typing import List
 from queue import Queue
@@ -8,9 +8,9 @@ from PyQt6.QtCore import QObject, Qt, QThreadPool, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtGui import QBrush, QColor
 
-from controller.widgets.file_tile_widget import FileTile, FileTileCreatorWorker
-from controller.widgets.file_compressing_display_widget import FileCompressingProgressWindow
+from models.file_tile import FileTile, FileTileCreatorWorker
 from controller.widgets.output_settings_widget import OutputSettingsDialog
+from models.file_compressor import FileCompresser
 
 class OutputController(QObject):
     """Calculates anything needed for the output/right view
@@ -44,7 +44,6 @@ class OutputController(QObject):
         if len(self.file_tile_list) == 0:
             return
         
-        
         width_pad = 10
         height_pad = 10
         
@@ -55,7 +54,7 @@ class OutputController(QObject):
         
         # place tiles and add to scene
         for tile in self.file_tile_list:
-            tile.set_ordered_sibling_tiles(self.file_tile_list)
+            tile.set_ordered_tiles(self.file_tile_list)
             tile.setPos(col * (self.tile_width) + (col+1)*width_pad, 
                         row * (self.tile_height) + (row+1)*height_pad)
             tile.update()
@@ -78,13 +77,13 @@ class OutputController(QObject):
         selected_file_tiles = [tile for tile in self.file_tile_list if tile.highlight_tile is True]
         if selected_file_tiles == []:
             return
-        FileCompressingProgressWindow(selected_file_tiles, self.settings_dialog)
+        FileCompresser(selected_file_tiles, self.settings_dialog)
         
     def process_api_files_metadata(self, files_metadata:[])->[FileTile]:
-        """ turns file_metadata into filetiles
+        """ turns given file_metadata into filetiles for display
 
         Args:
-            files_metadata ([]): List of metadata for files, now need to process and turn into file_tiles
+            files_metadata ([]): List of metadata for files, given from hydrus_api
         """
         if files_metadata == [] or files_metadata is None:
             return None
@@ -102,28 +101,29 @@ class OutputController(QObject):
         def progress_callback():
             progress_dialog.setValue(progress_dialog.value()+1)
         
-        # create workers and make popup
-        file_queue = Queue()
+        # create workers and connect to popup
+        file_tile_queue = Queue()
         
         for file_metadata in files_metadata:
             file_tile_worker = FileTileCreatorWorker(
-                file_metadata, self.tile_width, self.tile_height, file_queue, self.size_type
+                file_metadata, self.tile_width, self.tile_height, file_tile_queue, self.size_type
             )
             file_tile_worker.signals.finished.connect(progress_callback)
             thread_pool.start(file_tile_worker)
+            
+        # setup waiting part
         progress_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         progress_dialog.show()
-        
         thread_pool.waitForDone()
         
-        # clean out the scene and add in new tiles
-        
+        # clean  previous items
         for item in self.file_grid_scene.items():
             self.file_grid_scene.removeItem(item)
-        # empty out our filequeue and sort
+            
+        # sort the file_tiles and then rebuild the table
         self.file_tile_list = []
-        while not file_queue.empty():
-            item = file_queue.get()
+        while not file_tile_queue.empty():
+            item = file_tile_queue.get()
             self.file_tile_list.append(item)
             self.file_grid_scene.addItem(item)
         self.file_tile_list = sorted(self.file_tile_list, 

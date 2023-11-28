@@ -1,4 +1,4 @@
-"""View for the left side of the panel. Should be where the user makes all their inputs
+"""View for the left side of the panel. Should be where the user makes all their inputs then gives inputs to input_controller when button pressed
 """
 from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout
@@ -56,7 +56,7 @@ class InputWindow(QWidget):
         input_layout.addLayout(checkbox_layout)
                 
         get_files_metadata_button.clicked.connect( lambda:
-            self.input_controller.get_files_metadata(
+            self.input_controller.get_files_onclick(
                 file_number_box.value(),
                 size_type_box.currentText(),
                 img_checkbox.isChecked(),

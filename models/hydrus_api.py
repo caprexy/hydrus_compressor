@@ -1,4 +1,6 @@
-"""Contains all logic to call API and parse the return values, gives back api results in a nice way
+"""Contains all logic to call API and parse the return values, 
+    gives back api results in a nice way but does not format for UI use, that's 
+    the controller's responsibility
 """
 import json
 import requests

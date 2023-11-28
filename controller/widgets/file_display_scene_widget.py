@@ -2,7 +2,7 @@
 """
 from PyQt6.QtWidgets import QGraphicsScene
 
-from controller.widgets.file_tile_widget import FileTile
+from models.file_tile import FileTile
 
 class FileDisplayScene(QGraphicsScene):
     """Redefines the scene used for the file display

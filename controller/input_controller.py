@@ -1,4 +1,5 @@
-""" Controller for input plane where user chooses their settings and such
+""" Controller for input plane, processes user input and then calls the relevant api model. 
+    Finally calls the output_controller for display
 """
 # pylint: disable=E0611
 import typing
@@ -7,13 +8,13 @@ from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout, QWidget
 
 import models.settings as settings
-from controller.helpers import api_file_processor
+from models import hydrus_api
 
 class InputController(QObject):
     """Class to define functions for the controller and to be used to be passed to the intercontroller comms
     """
     
-    get_files_metadata_complete = pyqtSignal()
+    get_files_onclick_complete = pyqtSignal()
     api_file_objects = []
 
     def __init__(self) -> None:
@@ -45,7 +46,7 @@ class InputController(QObject):
         warning_window.exec()
         return warning_window
 
-    def get_files_metadata(self, 
+    def get_files_onclick(self, 
             max_file_size: int,
             size_type: str,
             get_imgs: bool,
@@ -53,8 +54,8 @@ class InputController(QObject):
             get_archive : bool,
             get_inbox : bool, 
     ):
-        """ Once all inputs are given, the get files button is clicked and we pass in all information and display
-
+        """ Process chosen settings and make the api call. 
+            Finally pass to output controller for output display
         Args:
             max_file_size (int): number for max file size
             size_type (str): descriptor for max file size number
@@ -97,8 +98,9 @@ class InputController(QObject):
             self.warning("Did not select inbox or archive")
             return
 
-        self.api_files_metadata = api_file_processor.get_filtered_files_metadata_from_api(tags_list)
-        self.get_files_metadata_complete.emit()
+        # sets the file_metadata and emits signal for intercontroller_comm to pass to output controller
+        self.api_files_metadata = hydrus_api.get_filtered_files_metadata_from_api(tags_list)
+        self.get_files_onclick_complete.emit()
         
     def open_config_menu(self):
         """Function to be called when making a popup for the config menu
@@ -106,7 +108,7 @@ class InputController(QObject):
         UserConfigWindow().show()
 
 class UserConfigWindow(QDialog):
-    """Made into widget for testing
+    """ Defines a window for display when open config menu is clicked
 
     Args:
         QDialog (_type_): inhereited parent

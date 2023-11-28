@@ -5,7 +5,7 @@ import pytest
 from pytest import MonkeyPatch
 
 from controller.input_controller import InputController, UserConfigWindow
-from controller.helpers import api_file_processor
+from models import hydrus_api
 import controller.constants as constants
 
 
@@ -28,7 +28,7 @@ def input_controller():
     
     input = InputController()
     
-    hy_key, port = api_file_processor.user_info.get_api_info() 
+    hy_key, port = hydrus_api.user_info.get_api_info() 
     
     assert hy_key == INITAL_HY_KEY
     assert port == INITAL_API_PORT
@@ -46,7 +46,7 @@ def test_get_files_metadata(input_controller: InputController, mocker):
         mocker (_type_): function level mocker from pytest mock
     """
     
-    mock_setter = mocker.patch('controller.helpers.api_file_processor.get_filtered_files_metadata_from_api')
+    mock_setter = mocker.patch('controller.helpers.hydrus_api.get_filtered_files_metadata_from_api')
 
     def flip():
         flip.switch = True

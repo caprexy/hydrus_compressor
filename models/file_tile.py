@@ -7,7 +7,7 @@ from PyQt6.QtCore import  Qt, QLine, QRectF, QEvent, QRunnable, pyqtSignal, QObj
 from PyQt6.QtGui import  QColor, QBrush, QPainterPath, QPen
 from queue import Queue
 
-from controller.helpers import api_file_processor
+from models import hydrus_api
 
 from controller.widgets.center_text_box_widget import CenterTextBox
 
@@ -21,7 +21,7 @@ class FileTile(QGraphicsItem):
     tile_background_color = QColor(210, 210, 210)
     selected_background_color = QColor(179, 236, 248)
     highlight_tile = False
-    ordered_sibling_tiles = None
+    ordered_tiles = None
     
     def __init__(self, file_metadata: {}, tile_width: int, tile_height: int, size_type: str):
         """Creates a new tile to display the file and all file information
@@ -60,26 +60,24 @@ class FileTile(QGraphicsItem):
         self.child_text_box.setPos(0, self.tile_height-self.text_height)
         
         # get the thumbnail and build it preemptively
-        pixmap = api_file_processor.get_file_thumbnail(self.file_id)
-        width_factor = self.tile_width / pixmap.width()
-        height_factor = self.image_height / pixmap.height()
-        scaling_factor = min(width_factor, height_factor)
+        pixmap = hydrus_api.get_file_thumbnail(self.file_id)
         self.scaled_pixmap = pixmap.scaled(
-            int(pixmap.width() * scaling_factor),
-            int(pixmap.height() * scaling_factor),
+            tile_width,
+            tile_height,
             Qt.AspectRatioMode.KeepAspectRatio
         )
+        
 
         
-    def paint(self, painter, option, widget=None):
+    def paint(self, painter, option=None, widget=None):
         """Overloading of the QGraphicsWidget paint string. See original
         """
-        
         # paint background
         if self.highlight_tile:
             color = self.selected_background_color
         else:
             color = self.tile_background_color
+
         painter.setBrush(QBrush(color))
         painter.drawRect(0, 0, self.tile_width, self.tile_height)
         
@@ -106,14 +104,14 @@ class FileTile(QGraphicsItem):
         modifier = event.modifiers()
         pivot_tile = None
         last_clicked_tile = None
-        for tile in self.ordered_sibling_tiles:
+        for tile in self.ordered_tiles:
             if modifier == Qt.KeyboardModifier.ShiftModifier:
                 if tile.isSelected():  #find last clicked tile
-                    pivot_index = self.ordered_sibling_tiles.index(tile)
+                    pivot_index = self.ordered_tiles.index(tile)
                     last_clicked_tile = tile
                 if tile.pivot_tile is True: # finds the prexisting pivot
                     pivot_tile = tile
-                    pivot_index = self.ordered_sibling_tiles.index(tile)
+                    pivot_index = self.ordered_tiles.index(tile)
             elif modifier == Qt.KeyboardModifier.NoModifier:
                 #unhighlight all other tiles
                 tile.highlight_tile = False
@@ -140,22 +138,20 @@ class FileTile(QGraphicsItem):
             
         # handle shift click
         if modifier == Qt.KeyboardModifier.ShiftModifier and pivot_tile:
-            pivot_index = self.ordered_sibling_tiles.index(pivot_tile)
-            self_index = self.ordered_sibling_tiles.index(self)
+            pivot_index = self.ordered_tiles.index(pivot_tile)
+            self_index = self.ordered_tiles.index(self)
             # if last_clicked_tile wasn't pivot, then we must dehighlight other tiles
             if pivot_tile is not last_clicked_tile and last_clicked_tile is not None:
-                last_clicked_index = self.ordered_sibling_tiles.index(last_clicked_tile)
-                for index, tile in enumerate(self.ordered_sibling_tiles):
+                last_clicked_index = self.ordered_tiles.index(last_clicked_tile)
+                for index, tile in enumerate(self.ordered_tiles):
                     if last_clicked_index <= index <= pivot_index or pivot_index <= index <= last_clicked_index:
                         tile.highlight_tile = False
                         tile.update()
             # highlight all new tiles from pivot to self 
-            for index, tile in enumerate(self.ordered_sibling_tiles):
+            for index, tile in enumerate(self.ordered_tiles):
                 if self_index <= index <= pivot_index or pivot_index <= index <= self_index:
                     tile.highlight_tile = True
                     tile.update()
-        
-        return super().mousePressEvent(event)
     
     
     def boundingRect(self):
@@ -163,19 +159,19 @@ class FileTile(QGraphicsItem):
         """
         return QRectF(0, 0, self.tile_width, self.tile_height) 
     
-    def set_ordered_sibling_tiles(self, tiles:list[QGraphicsItem]):
-        self.ordered_sibling_tiles = tiles
+    def set_ordered_tiles(self, tiles:list[QGraphicsItem]):
+        self.ordered_tiles = tiles
         
     def process_metadata(self, file_metadata):
         self.file_id = file_metadata["file_id"]
         self.file_type, self.extension = file_metadata["mime"].split("/")
         self.size_bytes = file_metadata["size"]
         self.tags = file_metadata["tags"]
-        self.storage_tags = {}
         self.ratings = file_metadata["ratings"]
         self.notes = file_metadata["notes"]
         self.unix_modified_time = file_metadata["time_modified_details"]["local"]
         
+        self.storage_tags = {}
         for service_id in self.tags:
             self.storage_tags[service_id] = self.tags[service_id]["storage_tags"]        
 

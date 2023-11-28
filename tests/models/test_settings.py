@@ -11,29 +11,13 @@ from pytest import raises
 import models.settings as settings
 import controller.constants as constants
 
-# @pytest.fixture(scope="function")
-# def override_open_w(monkeypatch):
-#     def mock_open(*args, **kwargs):
-#         class MockFile:
-#             def close(self):
-#                 if "w" not in args:
-#                     super()
-#             def __enter__(*args, **kwargs):
-#                 if "w" not in args:
-#                     super(args, kwargs)
-#             def __exit__(*args, **kwargs):
-#                 if "w" not in args:
-#                     super(args)
-#         return MockFile()
-    
-#     monkeypatch.setattr("builtins.open",mock_open)
-
+GOOD_USER_FILE = "good_user_data.json"
 @pytest.mark.order(1)
 def test_good_user_json():
     """Tests if can read from a good input/user data json
     """
-    good_user_file = "good_user_data.json"
-    good_user_path = f"tests\\fake_user_data_files\\{good_user_file}"
+    GOOD_USER_FILE = "good_user_data.json"
+    good_user_path = f"tests\\fake_user_data_files\\{GOOD_USER_FILE}"
     settings.USER_DATA_FILE = good_user_path
     
     settings.read_user_json()
@@ -50,9 +34,10 @@ def test_no_user_json():
     
     temp_user_file = "temp.json"
     temp_path = f"tests\\fake_user_data_files\\{temp_user_file}"
+    
     if os.path.exists(temp_path):
         os.remove(temp_path)
-    
+        
     # grab defaults again
     importlib.reload(settings)
     settings.USER_DATA_FILE = temp_path
@@ -60,8 +45,9 @@ def test_no_user_json():
     settings.read_user_json()
     
     assert os.path.exists(temp_path)
-    assert settings.get_api_info() == ('None', None)
-    os.remove(temp_path)
+    with pytest.raises(ValueError):
+        settings.get_api_info()
+    os.remove(temp_path) # this appears to be unable to finish before funciton done
     
 @pytest.mark.order(3)
 def test_corrupt_user_json(monkeypatch):
@@ -69,36 +55,52 @@ def test_corrupt_user_json(monkeypatch):
     """
     
     temp_user_file = "bad_user_data.json"
-    temp_path = f"tests\\fake_user_data_files\\{temp_user_file}"
+    bad_temp_path = f"tests\\fake_user_data_files\\{temp_user_file}"
+    
+    good_temp_path = f"tests\\fake_user_data_files\\{GOOD_USER_FILE}"
+    
+    if os.path.exists(bad_temp_path):
+        os.remove(bad_temp_path)
+        
+    # make bad file
+    with open(good_temp_path, 'r') as source:
+        content = source.read()
+    bad_content = content[:len(content)//2]
+    with open(bad_temp_path, 'w') as source:
+        source.write(bad_content)
+        
+    # grab defaults again
+    importlib.reload(settings)
+    settings.USER_DATA_FILE = bad_temp_path
+    
+    settings.read_user_json()
+    
+    assert os.path.exists(bad_temp_path)
+    with pytest.raises(ValueError):
+        assert settings.get_api_info()
+    os.remove(bad_temp_path)
+
+@pytest.mark.order(4)
+def test_empty_file():
+    """Tests if we have a somehow empty file, just clear it and make a new one
+        This is a edge case variant of corrupted
+    """
+    
+    # create empty file
+    temp_user_file = "nothingz.json"
+    empty_file_path = f"tests\\fake_user_data_files\\{temp_user_file}"
+    with open(empty_file_path, 'w'):
+        pass
     
     # grab defaults again
     importlib.reload(settings)
-    settings.USER_DATA_FILE = temp_path
+    settings.USER_DATA_FILE = empty_file_path
     
-    
-     
     settings.read_user_json()
     
-    assert os.path.exists(temp_path)
-    assert settings.get_api_info() == ('None', None)
-
-# @pytest.mark.order(4)
-# def test_empty_file():
-#     """Tests if we have a somehow empty file, just clear it and make a new one
-#         This is a edge case variant of corrupted
-#     """
-    
-#     temp_user_file = "nothingz.json"
-#     temp_path = f"tests\\fake_user_data_files\\{temp_user_file}"
-    
-#     # grab defaults again
-#     importlib.reload(settings)
-#     settings.USER_DATA_FILE = temp_path
-    
-#     settings.read_user_json()
-    
-#     assert os.path.exists(temp_path)
-#     assert settings.get_api_info() == ('None', None)
+    assert os.path.exists(empty_file_path)
+    with pytest.raises(ValueError):
+        settings.get_api_info() == ('None', None)
     
 # @pytest.mark.order(5)
 # def test_weird_user_json(monkeypatch):
@@ -113,17 +115,17 @@ def test_corrupt_user_json(monkeypatch):
 #     # grab defaults again
 #     importlib.reload(settings)
     
-    # def mock_open(*args, **kwargs):
-    #     class MockFile:
-    #         def close(self):
-    #             pass
-    #         def __enter__(*args, **kwargs):
-    #             pass
-    #         def __exit__(*args, **kwargs):
-    #             pass
-    #     return MockFile()
+#     def mock_open(*args, **kwargs):
+#         class MockFile:
+#             def close(self):
+#                 pass
+#             def __enter__(*args, **kwargs):
+#                 pass
+#             def __exit__(*args, **kwargs):
+#                 pass
+#         return MockFile()
     
-    # monkeypatch.setattr("builtins.open",mock_open)
+#     monkeypatch.setattr("builtins.open",mock_open)
     
 #     settings.USER_DATA_FILE = temp_path
     

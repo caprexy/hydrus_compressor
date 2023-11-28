@@ -6,16 +6,16 @@ import pytest
 from pytest import MonkeyPatch
 
 from controller.output_controller import OutputController
-from controller.helpers import api_file_processor
-from controller.widgets import file_tile_widget
+from models import hydrus_api
+from controller.widgets import file_tile
 import controller.constants as constants
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtCore import QRunnable, QThreadPool
 from PyQt6.QtGui import QPixmap 
-from controller.helpers import api_file_processor
+from models import hydrus_api
 
 from  models.user_model import UserInfo
-from controller.widgets.file_tile_widget import FileTile, WorkerSignals, FileTileCreatorWorker
+from models.file_tile import FileTile, WorkerSignals, FileTileCreatorWorker
 @pytest.mark.order(1)
 @pytest.fixture(scope="module")
 def output_controller():
@@ -51,7 +51,7 @@ def test_build_file_table(qtbot, mocker, output_controller:OutputController):
         
     def get_file_thumbnail(id):
         return QPixmap(50,50)
-    mocker.patch('controller.helpers.api_file_processor.get_file_thumbnail', get_file_thumbnail)
+    mocker.patch('controller.helpers.hydrus_api.get_file_thumbnail', get_file_thumbnail)
     tiles = []
     for metadata in file_metadata["metadata"]:
         tiles.append(FileTile(metadata, 300, 300, "mb"))
@@ -88,7 +88,7 @@ def test_process_api_files_table(qtbot, monkeypatch, mocker, output_controller:O
     
     def get_file_thumbnail(self):
         return QPixmap(50,50)
-    mocker.patch('controller.helpers.api_file_processor.get_file_thumbnail', get_file_thumbnail)
+    mocker.patch('controller.helpers.hydrus_api.get_file_thumbnail', get_file_thumbnail)
     
     tiles = []
     for metadata in file_metadata["metadata"]:

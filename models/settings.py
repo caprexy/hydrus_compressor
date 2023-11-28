@@ -61,7 +61,7 @@ def set_api_info(hydrus_key_in: str, api_port_in: int):
     return write_user_data()
 
 def get_api_info()->(str,int):
-    """Returns hydrus key and api port
+    """Returns hydrus key and api port. If not, raises an error if one of the two is missing. This is because the keys are really important
     Returns:
         _type_: tuple of the hydrus key and api port as (str,int)
     """ 
@@ -122,7 +122,7 @@ def read_user_json()->(str,int):
         print("Found a corrupted datafile, making a new one")
         os.remove(USER_DATA_FILE)
         open(USER_DATA_FILE, "w", encoding="utf-8").close()
-        raise ex
+        return
     
     # parse the data/json abd turn them into vars
     try:
