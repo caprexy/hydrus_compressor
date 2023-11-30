@@ -60,11 +60,14 @@ def set_api_info(hydrus_key_in: str, api_port_in: int):
     api_port = api_port_in
     return write_user_data()
 
+try_get = False
 def get_api_info()->(str,int):
     """Returns hydrus key and api port. If not, raises an error if one of the two is missing. This is because the keys are really important
     Returns:
         _type_: tuple of the hydrus key and api port as (str,int)
     """ 
+    global try_get
+    try_get = True
     if api_port == None and hydrus_key == None:
         raise ValueError("Missing both api port and hydrus key in settings")
     if hydrus_key == None:
@@ -78,6 +81,8 @@ def write_user_data():
     Returns:
         bool: sucessful or not
     """
+    if try_get is False: # likely we've crashed so just dont save anything
+        return
     try:
         with open(USER_DATA_FILE, "w", encoding="utf-8") as json_file:
             data = {
@@ -108,12 +113,14 @@ def read_user_json()->(str,int):
     _type_: if sucessful will return a tuple of (str,int) that contains (hydrus api key, port number). 
     Otherwise wil return (reason for error: str, None)
     """
+    global have_read
     try:
         with open(USER_DATA_FILE, "r", encoding="utf-8") as json_file:
             file_size = os.path.getsize(USER_DATA_FILE)
             if file_size == 0:
                 raise FileNotFoundError
             data = json.load(json_file)
+        have_read = True
     except FileNotFoundError:
         print("Making new user data file!")
         json_file = open(USER_DATA_FILE, "w", encoding="utf-8").close()
@@ -140,4 +147,4 @@ def read_user_json()->(str,int):
             
     except KeyError:
         print("Failed to read, so just overwriting with plain user data")
-        write_user_data()
+        write_user_data(read_fail=True)

@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from urllib3.exceptions import NewConnectionError
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThreadPool, QRunnable
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication, QPushButton
 import controller.constants as constants
@@ -53,11 +53,13 @@ def warning(reason:str, exec=True):
     return warning_window
 
 def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
-    """Actually calls the api given the tags to describe what we want like videos, etc
+    """Actually calls the api given the tags to describe what we want like videos, etc.
+        Since is specialized we will be using a thread to not block main.
 
     Args:
         tags (list[str]): list of rules like should be a video, in inbox or archive
     """
+    
     warning_window = warning("Getting files", exec=False)
     QApplication.processEvents()
     
