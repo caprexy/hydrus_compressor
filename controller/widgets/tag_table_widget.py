@@ -72,6 +72,7 @@ class TagTableRow(QTableWidgetItem):
         self.setText(text)
         self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable)
     
+        self.setToolTip("Double click me to select all files with my tag, click elsewhere to get back to normal")
     def set_tag_n_count(self, tag, count):
         self.tag = tag
         self.count = count

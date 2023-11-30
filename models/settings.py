@@ -6,6 +6,8 @@ import atexit
 
 import controller.constants as constants
 
+from PyQt6.QtCore import QSettings, QRect
+from PyQt6.QtWidgets import QWidget
 """Models the user of the program
 Stores the key for hydrus api and the according port number
 Stores other program settings
@@ -21,6 +23,7 @@ api_port = None
 
 # program settings
 
+
 # compressed image quality options
 
 compressed_img_quality = 95
@@ -32,6 +35,42 @@ should_resize_by_percentage = False
 resize_by_percentage = 75
 resize_by_pixel_height = 3840
 resize_by_pixel_width = 2180
+
+
+qsettings = QSettings("Hydrus", "Hydrus Compressor")
+
+# geometry settings for widgets
+MAIN_WINDOW_GEOM_KEY = "main_window/geometry"
+def get_main_window_geometry()->bytearray:
+    default_geom_widget = QWidget()
+    default_geom_widget.setGeometry( 1000, 500, 800, 400)
+    return qsettings.value(MAIN_WINDOW_GEOM_KEY, default_geom_widget.saveGeometry())
+def set_main_window_geometry(geometry):
+    qsettings.setValue(MAIN_WINDOW_GEOM_KEY, geometry)
+    
+INPUT_WINDOW_GEOM_KEY = "input_window/geometry"
+def get_input_window_geometry()->bytearray:
+    return qsettings.value(INPUT_WINDOW_GEOM_KEY, None)
+def set_input_window_geometry(geometry):
+    qsettings.setValue(INPUT_WINDOW_GEOM_KEY, geometry)
+
+OUTPUT_WINDOW_GEOM_KEY = "output_window/geometry"
+def get_output_window_geometry()->bytearray:
+    return qsettings.value(OUTPUT_WINDOW_GEOM_KEY,None)
+def set_output_window_geometry(geometry):
+    qsettings.setValue(OUTPUT_WINDOW_GEOM_KEY, geometry)
+    
+OUTPUT_SPLITTER_TILES_GEOM_KEY = "output_splitter/tiles"
+def get_output_splitter_tiles_geometry()->bytearray:
+    return qsettings.value(OUTPUT_SPLITTER_TILES_GEOM_KEY,None)
+def set_output_splitter_tiles_geometry(geometry):
+    qsettings.setValue(OUTPUT_SPLITTER_TILES_GEOM_KEY, geometry)
+    
+OUTPUT_SPLITTER_TAGS_GEOM_KEY = "output_splitter/tags"
+def get_output_splitter_tags_geometry()->bytearray:
+    return qsettings.value(OUTPUT_SPLITTER_TAGS_GEOM_KEY,None)
+def set_output_splitter_tags_geometry(geometry):
+    qsettings.setValue(OUTPUT_SPLITTER_TAGS_GEOM_KEY, geometry)
 
 
 def set_api_info(hydrus_key_in: str, api_port_in: int):

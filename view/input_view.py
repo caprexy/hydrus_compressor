@@ -1,9 +1,13 @@
 """View for the left side of the panel. Should be where the user makes all their inputs then gives inputs to input_controller when button pressed
 """
+import typing
+from PyQt6 import QtGui
+from PyQt6.QtGui import QCloseEvent, QResizeEvent
 from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout
 
 from controller.input_controller import InputController
+import models.settings as settings
 
 class InputWindow(QWidget):
     """Qwidget object to define the input window frame
@@ -21,7 +25,6 @@ class InputWindow(QWidget):
         input_layout = QVBoxLayout()
         self.setLayout(input_layout)
 
-        
         get_files_metadata_button = QPushButton("Get all files following the conditions below")
         input_layout.addWidget(get_files_metadata_button)
         
@@ -69,3 +72,6 @@ class InputWindow(QWidget):
         config_button = QPushButton("Open config")
         config_button.clicked.connect(self.input_controller.open_config_menu)
         input_layout.addWidget(config_button)
+        
+    def close_save(self):
+        settings.set_input_window_geometry(self.saveGeometry())
