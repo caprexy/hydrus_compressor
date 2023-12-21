@@ -11,7 +11,7 @@ class PercentageWidget(QWidget):
 class PixelsWidget(QWidget):
     pass
 
-class OutputSettingsDialog(QDialog):
+class CompressionSettingsDialog(QDialog):
     
     def __init__(self) -> None:
         super().__init__()
@@ -106,6 +106,17 @@ class OutputSettingsDialog(QDialog):
         max_width = self.pixels_widget.width_spinbox.value()
         
         return compression_level, use_percentage, resize_percentage, max_width, max_height
+    
+    # def compress_selected_files(self):
+    #     """Called when pressing the compress selected files button
+    #     """
+    #     if self.file_grid_scene is None or self.file_tile_list == []:
+    #         return
+        
+    #     selected_file_tiles = [tile for tile in self.file_tile_list if tile.highlight_tile is True]
+    #     if selected_file_tiles == []:
+    #         return
+    #     FileCompresser(selected_file_tiles, self.settings_dialog)
 
 class PercentageWidget(QWidget):
     """This widget will hold all the options if resizing by percentage

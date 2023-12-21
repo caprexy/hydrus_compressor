@@ -1,7 +1,7 @@
 import pytest
 import requests
 import json
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 from controller import constants
 
 from models.user_model import UserInfo
@@ -14,7 +14,7 @@ def mock_user_info():
             pass
         def get_api_info(self) -> (str, int):
             return ("1",2)
-    hydrus_api.set_user_info(FakeUserInfo())
+    hydrus_api_caller.set_user_info(FakeUserInfo())
 
 FILTERED_FILE_JSON_LOCATION = ".\\tests\\fake_user_data_files\\request_metadata_raw.json"
 FILE_SEARCH_JSON_LOCATION = ".\\tests\\fake_user_data_files\\raw_get_file_search.json"
@@ -34,7 +34,7 @@ def test_get_filtered_files(monkeypatch):
             with open(FILE_SEARCH_JSON_LOCATION, 'r') as file:
                 return json.load(file)
     def fakeGet(url, headers, params, timeout):
-        if hydrus_api.GET_FILE_SEARCH in url:
+        if hydrus_api_caller.GET_FILE_SEARCH in url:
             return SearchFakeRes()
         return FilteredFakeRes()
     
@@ -48,7 +48,7 @@ def test_get_filtered_files(monkeypatch):
     tags_list.append("system:filetype is image")
     tags_list.append("system:archive")
     
-    hydrus_api.get_filtered_files_metadata_from_api(tags_list)
+    hydrus_api_caller.get_filtered_files_metadata_from_api(tags_list)
     # print(res)
     # json_data = None
     # with open(FILTERED_FILE_JSON_LOCATION, 'r') as file:

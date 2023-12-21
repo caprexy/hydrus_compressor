@@ -36,25 +36,26 @@ class MainApp(QMainWindow):
         self.main_splitter = main_splitter
         self.setCentralWidget(main_splitter)
         
-        # panes
-        left_pane = input_view.InputWindow()
-        right_pane = output_view.OutputWindow()
-        intercontroller_comm.connect_input_output_controllers(
-                left_pane.input_controller,
-                right_pane.output_controller)
+        # set up panes
+        input_pane = input_view.InputWindow()
+        output_pane = output_view.OutputWindow()
+        intercontroller_comm.connect_input_output(
+                input_pane.input_controller,
+                output_pane.output_controller,
+                output_pane.file_grid_view)
         # letting the sub widgets know we are closing
-        self.app_closing.connect(left_pane.close_save)
-        self.app_closing.connect(right_pane.close_save)
+        self.app_closing.connect(input_pane.close_save)
+        self.app_closing.connect(output_pane.close_save)
 
         # add widgets to splitter and position if needed
-        main_splitter.addWidget(left_pane)
-        main_splitter.addWidget(right_pane)   
+        main_splitter.addWidget(input_pane)
+        main_splitter.addWidget(output_pane)   
         if settings.get_input_window_geometry() is None:
             main_splitter.setStretchFactor(0, 1) 
             main_splitter.setStretchFactor(1, 50)  
         else:
-            left_pane.restoreGeometry(settings.get_input_window_geometry())
-            right_pane.restoreGeometry(settings.get_output_window_geometry())
+            input_pane.restoreGeometry(settings.get_input_window_geometry())
+            output_pane.restoreGeometry(settings.get_output_window_geometry())
             
             
         # build frame for the widget

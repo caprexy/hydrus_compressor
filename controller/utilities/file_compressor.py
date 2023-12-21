@@ -13,9 +13,9 @@ from PyQt6.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor, QText
 from PyQt6.QtWidgets import QTableWidget , QSpinBox, QVBoxLayout,  QTableWidgetItem, QSizePolicy, QAbstractScrollArea, QHeaderView, QDialog,QFrame, QLabel, QWidget, QStackedLayout
 
 from models.file_tile import FileTile
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 from controller import constants
-from controller.widgets.output_settings_widget import OutputSettingsDialog
+from view.input_function_widgets.file_compression_widgets import CompressionSettingsDialog
 
 class FileCompresser(QDialog):
     """Compresses the files and displays all files being compressed and status information
@@ -23,7 +23,7 @@ class FileCompresser(QDialog):
     done_count = total_files = 0
     def __init__(self, 
                  file_tile_list:list[FileTile],
-                 settings_dialog:OutputSettingsDialog):
+                 settings_dialog:CompressionSettingsDialog):
         """Get all things neede for file compression
 
         Args:
@@ -143,7 +143,7 @@ class CompressingFileThreadWorker(QRunnable):
         """Given a fileTile, pull out the data and compress it
         """
         #get from hydrus
-        image = hydrus_api.get_full_image(self.file_tile.file_id)
+        image = hydrus_api_caller.get_full_image(self.file_tile.file_id)
         self.progress_box.set_progress_text("Compressing original image")
 
         # Calculate the new width and height while maintaining the aspect ratio
@@ -186,7 +186,7 @@ class CompressingFileThreadWorker(QRunnable):
         self.progress_box.set_progress_text("Sending new file to hydrus")
             
         # send file to hydrus
-        res = hydrus_api.send_to_hydrus(output_image_path)
+        res = hydrus_api_caller.send_to_hydrus(output_image_path)
         if "error" in res:
             raise ConnectionAbortedError("Somethihng went wrong when sending to hydrus, got error back")
         status = res["status"]
@@ -205,13 +205,13 @@ class CompressingFileThreadWorker(QRunnable):
         if status != 1:
             return
         self.progress_box.set_progress_text("Duplicating tags to new file")
-        hydrus_api.add_tags_hash(new_hash, self.file_tile.storage_tags)
+        hydrus_api_caller.add_tags_hash(new_hash, self.file_tile.storage_tags)
         self.progress_box.set_progress_text("Duplicating ratings to new file")
-        hydrus_api.add_ratings(new_hash, self.file_tile.ratings)
+        hydrus_api_caller.add_ratings(new_hash, self.file_tile.ratings)
         self.progress_box.set_progress_text("Duplicating notes to new file")
-        hydrus_api.add_notes(new_hash, self.file_tile.notes)
+        hydrus_api_caller.add_notes(new_hash, self.file_tile.notes)
         self.progress_box.set_progress_text("Sending old file to hydrus trash")
-        hydrus_api.delete_file(self.file_tile.file_id)
+        hydrus_api_caller.delete_file(self.file_tile.file_id)
         self.progress_box.set_progress_text("Progress complete!!", done=True)
         
         # if sucess, we can add tags

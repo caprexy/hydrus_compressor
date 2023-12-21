@@ -8,7 +8,7 @@ from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout, QWidget
 
 import models.settings as settings
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 
 class InputController(QObject):
     """Class to define functions for the controller and to be used to be passed to the intercontroller comms
@@ -16,6 +16,8 @@ class InputController(QObject):
     
     get_files_onclick_complete = pyqtSignal()
     api_file_objects = []
+    output_controller = None
+    file_grid_view_controller = None
 
     def __init__(self) -> None:
         super().__init__()
@@ -99,7 +101,8 @@ class InputController(QObject):
             return
 
         # sets the file_metadata and emits signal for intercontroller_comm to pass to output controller
-        self.api_files_metadata = hydrus_api.get_filtered_files_metadata_from_api(tags_list)
+        api_files_metadata = hydrus_api_caller.get_filtered_files_metadata_from_api(tags_list)
+        self.file_grid_view_controller.process_api_files_metadata(api_files_metadata, self.size_type)
         self.get_files_onclick_complete.emit()
         
     def open_config_menu(self):
@@ -107,6 +110,12 @@ class InputController(QObject):
         """
         UserConfigWindow().show()
 
+    def compress_files_function(self):
+        pass
+    def get_selected_tiles(self):
+        pass
+        
+# this needs to become its own class and controller as it grows
 class UserConfigWindow(QDialog):
     """ Defines a window for display when open config menu is clicked
 

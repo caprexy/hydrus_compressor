@@ -6,7 +6,9 @@ from PyQt6.QtGui import QCloseEvent, QResizeEvent
 from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
 from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout
 
+from view.input_function_widgets.file_compression_widgets import CompressionSettingsDialog
 from controller.input_controller import InputController
+from controller.utilities import file_compressor
 import models.settings as settings
 
 class InputWindow(QWidget):
@@ -16,6 +18,7 @@ class InputWindow(QWidget):
         QWidget (_type_): standard input for the qwidget
     """
     input_controller = None
+    output_controller = None
     
     def __init__(self):
         super().__init__()
@@ -72,6 +75,16 @@ class InputWindow(QWidget):
         config_button = QPushButton("Open config")
         config_button.clicked.connect(self.input_controller.open_config_menu)
         input_layout.addWidget(config_button)
+        
+        open_settings = QPushButton("Open image compression settings")
+        input_layout.addWidget(open_settings)
+        settings_dialog = CompressionSettingsDialog()
+        def open_settings_widget():
+            settings_dialog.show()
+        open_settings.clicked.connect(open_settings_widget)
+        
+        compress_button = QPushButton("Compress selected files")
+        input_layout.addWidget(compress_button)
         
     def close_save(self):
         settings.set_input_window_geometry(self.saveGeometry())

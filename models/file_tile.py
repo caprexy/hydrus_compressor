@@ -7,9 +7,9 @@ from PyQt6.QtCore import  Qt, QLine, QRectF, QEvent, QRunnable, pyqtSignal, QObj
 from PyQt6.QtGui import  QColor, QBrush, QPainterPath, QPen
 from queue import Queue
 
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 
-from controller.widgets.center_text_box_widget import CenterTextBox
+from view.center_text_box_widget import CenterTextBox
 
 class FileTile(QGraphicsItem):
     """Custom widget to reprsent a tile in the grid of images.
@@ -60,7 +60,7 @@ class FileTile(QGraphicsItem):
         self.child_text_box.setPos(0, self.tile_height-self.text_height)
         
         # get the thumbnail and build it preemptively
-        pixmap = hydrus_api.get_file_thumbnail(self.file_id)
+        pixmap = hydrus_api_caller.get_file_thumbnail(self.file_id)
         self.scaled_pixmap = pixmap.scaled(
             tile_width,
             tile_height,

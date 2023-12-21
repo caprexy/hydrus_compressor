@@ -6,13 +6,13 @@ import pytest
 from pytest import MonkeyPatch
 
 from controller.output_controller import OutputController
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 from controller.widgets import file_tile
 import controller.constants as constants
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QSpinBox, QWidget, QProgressDialog 
 from PyQt6.QtCore import QRunnable, QThreadPool
 from PyQt6.QtGui import QPixmap 
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 
 from  models.user_model import UserInfo
 from models.file_tile import FileTile, WorkerSignals, FileTileCreatorWorker

@@ -5,7 +5,7 @@ import pytest
 from pytest import MonkeyPatch
 
 from controller.input_controller import InputController, UserConfigWindow
-from models import hydrus_api
+from controller.utilities import hydrus_api_caller
 import controller.constants as constants
 
 
@@ -28,7 +28,7 @@ def input_controller():
     
     input = InputController()
     
-    hy_key, port = hydrus_api.user_info.get_api_info() 
+    hy_key, port = hydrus_api_caller.user_info.get_api_info() 
     
     assert hy_key == INITAL_HY_KEY
     assert port == INITAL_API_PORT
