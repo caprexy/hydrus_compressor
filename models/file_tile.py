@@ -9,7 +9,7 @@ from queue import Queue
 
 from controller.utilities import hydrus_api_caller
 
-from view.center_text_box_widget import CenterTextBox
+from view.ouput_widgets.center_text_box_widget import CenterTextBox
 
 class FileTile(QGraphicsItem):
     """Custom widget to reprsent a tile in the grid of images.

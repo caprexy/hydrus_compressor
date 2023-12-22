@@ -4,9 +4,9 @@ import typing
 from PyQt6 import QtGui
 from PyQt6.QtGui import QCloseEvent, QResizeEvent
 from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
-from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout
+from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout, QGroupBox, QStackedWidget, QFrame
 
-from view.input_function_widgets.file_compression_widgets import CompressionSettingsDialog
+from view.input_function_widgets.compress_file_panel_widget import CompressingFilePanel
 from controller.input_controller import InputController
 from controller.utilities import file_compressor
 import models.settings as settings
@@ -70,21 +70,47 @@ class InputWindow(QWidget):
                 archive_checkbox.isChecked(),
                 inbox_checkbox.isChecked()
             ))
-
         
         config_button = QPushButton("Open config")
         config_button.clicked.connect(self.input_controller.open_config_menu)
         input_layout.addWidget(config_button)
         
-        open_settings = QPushButton("Open image compression settings")
-        input_layout.addWidget(open_settings)
-        settings_dialog = CompressionSettingsDialog()
-        def open_settings_widget():
-            settings_dialog.show()
-        open_settings.clicked.connect(open_settings_widget)
+
+        ##### panel to dynamically change for different settings
+        panels_frame = QGroupBox("Operation inputs", self)
+        input_layout.addWidget(panels_frame)
+        panels_layout = QVBoxLayout()
+        panels_frame.setLayout(panels_layout)
         
-        compress_button = QPushButton("Compress selected files")
-        input_layout.addWidget(compress_button)
+        panels_dropdown = QComboBox(self)
+        self.panels_dropdown = panels_dropdown
+        panels_layout.addWidget(panels_dropdown)
+        panels_title = [
+            "File compression settings",
+            "test"
+        ]
+        panels_dropdown.addItems(panels_title)
+        
+        horizontal_line = QFrame(self)
+        horizontal_line.setFrameShape(QFrame.Shape.HLine)  # Set frame shape to a horizontal line
+        horizontal_line.setFrameShadow(QFrame.Shadow.Sunken)  # Set line style
+        horizontal_line.setLineWidth(2)
+        panels_layout.addWidget(horizontal_line)
+        
+        panels_stack_widget = QStackedWidget(self)
+        self.panels_stack_widget = panels_stack_widget
+        panels_layout.addWidget(panels_stack_widget)
+        
+        def panels_dropdown_changed(index=0):
+            panels_stack_widget.setCurrentIndex(index)
+        panels_dropdown.currentIndexChanged.connect(panels_dropdown_changed)
+        
+        self.compress_file_panel = CompressingFilePanel()
+        self.input_controller.set_compress_file_panel_widget(self.compress_file_panel)
+        panels_stack_widget.addWidget(self.compress_file_panel)
+        panels_stack_widget.addWidget(QLabel("ooga"))
+        
+        panels_stack_widget.setCurrentIndex(-1)
         
     def close_save(self):
         settings.set_input_window_geometry(self.saveGeometry())

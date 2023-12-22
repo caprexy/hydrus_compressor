@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor
 from controller.output_controller import OutputController
 
-from view.input_function_widgets.file_compression_widgets import CompressionSettingsDialog
+from view.input_function_widgets.file_compression_widgets import CompressionSettingsWidget
 from view.ouput_widgets.tag_table_widget import TagTableWidget
 from view.ouput_widgets.file_tile_display_widget import FileTileGridView
 import models.settings as settings
@@ -39,7 +39,6 @@ class OutputWindow(QWidget):
         main_splitter.addWidget(self.tag_table)
         if settings.get_output_splitter_tags_geometry():
             self.tag_table.restoreGeometry(settings.get_output_splitter_tags_geometry())
-        # tag_table.hide()
         
         self.output_controller = OutputController(
             self.tag_table,

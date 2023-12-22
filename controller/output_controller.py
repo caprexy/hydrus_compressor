@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QGraphicsView, QTableWidgetItem, QGraphicsScene, QTa
 from PyQt6.QtGui import QBrush, QColor
 
 from models.file_tile import FileTile, FileTileCreatorWorker
-from view.input_function_widgets.file_compression_widgets import CompressionSettingsDialog
+from view.input_function_widgets.file_compression_widgets import CompressionSettingsWidget
 from view.ouput_widgets.tag_table_widget import TagTableRow, TagTableWidget
 from view.ouput_widgets.file_tile_display_widget import FileTileGridView
 from controller.utilities.file_compressor import FileCompresser
@@ -36,5 +36,8 @@ class OutputController(QObject):
             file_grid_view : FileTileGridView
         ):
         super().__init__()
-        
+        self.file_grid_view = file_grid_view
         tag_table.build_file_grid_emitter.connect(file_grid_view.controller.build_file_table)
+        
+    def return_file_tile_grid_view(self):
+        return self.file_grid_view

@@ -9,10 +9,11 @@ import cv2
 from urllib3.exceptions import NewConnectionError
 
 from PyQt6.QtCore import Qt, QThreadPool, QRunnable
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QApplication, QPushButton
+from PyQt6.QtGui import QPixmap, QCursor
+from PyQt6.QtWidgets import QDialog, QLabel, QApplication, QPushButton
 import controller.constants as constants
 import models.settings as settings
+import view.popup_widgets as popup_widgets
 
 # API endpoints
 GET_FILE_SEARCH = "/get_files/search_files"
@@ -25,33 +26,6 @@ DELETE_FILE = "/add_files/delete_files"
 EDIT_RATINGS = "/edit_ratings/set_rating"
 ADD_NOTES = "/add_notes/set_notes"
 
-def warning(reason:str, exec=True):
-    """Creates a warning popup with given reason
-
-    Args:
-        reason (str): Text to be put into warning box
-        exec (bool): if to use exec or open
-    """
-    warning_window = QDialog()
-    warning_window.setWindowTitle("Warning!!!!!")
-    warning_window_layout = QVBoxLayout()
-    warning_window.setLayout(warning_window_layout)
-
-
-    reason_label = QLabel(reason)
-    warning_window_layout.addWidget(reason_label)
-
-    close_button = QPushButton('Close', warning_window)
-    close_button.clicked.connect(warning_window.accept)
-    warning_window_layout.addWidget(close_button)
-    
-    if exec:
-        warning_window.exec()
-    else:
-        warning_window.setWindowModality(Qt.WindowModality.ApplicationModal)
-        warning_window.open()
-    return warning_window
-
 def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
     """Actually calls the api given the tags to describe what we want like videos, etc.
         Since is specialized we will be using a thread to not block main.
@@ -60,9 +34,8 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
         tags (list[str]): list of rules like should be a video, in inbox or archive
     """
     
-    warning_window = warning("Getting files", exec=False)
-    QApplication.processEvents()
-    
+    QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+    error_msg = None
     try:
         hydrus_key, api_port  = settings.get_api_info()
         res = requests.get(
@@ -90,16 +63,20 @@ def get_filtered_files_metadata_from_api(tags_list: list[str])->[]:
         )
         
         return res.json()[constants.FILE_LIST_METADATA_KEY]
-    except ValueError as e:
-        warning(e)
+    except requests.exceptions.InvalidURL as e:
+        error_msg = "Check your port number"
     except requests.exceptions.ConnectionError as e:
-        warning("Is hydrus running?")
+        error_msg = "Is hydrus running?"
+    except ValueError as e:
+        error_msg = e
     except KeyError as e:
-        warning("Nothing found for the given settings")
+        error_msg = "Nothing found for the given settings, is key/port wrong?"
     except Exception as e:
-        print("Caught an exception of type:", type(e).__name__, f" and error message: {e}")
+        error_msg = "Caught an exception of type:", type(e).__name__, f" and error message: {e}"
     finally:
-        warning_window.close()
+        QApplication.restoreOverrideCursor()
+        if error_msg:
+            popup_widgets.warning(error_msg)
     return None
         
 

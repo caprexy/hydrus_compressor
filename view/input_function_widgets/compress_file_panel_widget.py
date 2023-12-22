@@ -1,11 +1,49 @@
 import typing
-from PyQt6 import QtCore
-from PyQt6.QtWidgets import QWidget, QSizePolicy, QComboBox, QGridLayout, QDialog ,QButtonGroup,QSizePolicy , QHBoxLayout, QVBoxLayout, QCheckBox, QLabel, QRadioButton , QSpinBox
+from PyQt6 import QtGui
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QBrush, QColor
+from PyQt6.QtGui import QCloseEvent, QResizeEvent
+from PyQt6.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import QLabel, QComboBox, QSpinBox, QHBoxLayout, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QSizePolicy, QComboBox, QGridLayout, QStackedWidget ,QButtonGroup,QSizePolicy , QHBoxLayout, QVBoxLayout, QCheckBox, QLabel, QRadioButton , QSpinBox
 
+from controller.utilities import file_compressor
 import models.settings as settings
 
+class CompressingFilePanel(QWidget):
+    """Qwidget object to define the panel that contains all compression file options
+
+    Args:
+        QWidget (_type_): standard input for the qwidget
+    """
+    
+    def __init__(self):
+        super().__init__()
+        
+        panel_layout = QVBoxLayout()
+        self.setLayout(panel_layout)
+        
+        self.compression_settings = CompressionSettingsWidget()
+        panel_layout.addWidget(self.compression_settings)
+        
+        compress_button = QPushButton("Compress selected files")
+        panel_layout.addWidget(compress_button)
+        compress_button.clicked.connect(self.compress_selected_files)
+        
+    def close_save(self):
+        settings.set_input_window_geometry(self.saveGeometry())
+        
+    
+    def set_file_grid_view_controller(self, file_grid_view_controller):
+        self.file_grid_view_controller = file_grid_view_controller
+        
+    def compress_selected_files(self):
+        """Called when pressing the compress selected files button
+        """
+        selected_file_tiles = self.file_grid_view_controller.get_selected_tiles()
+        if selected_file_tiles == [] or selected_file_tiles is None:
+            return
+        file_compressor.FileCompresser(selected_file_tiles, self.compression_settings)
+        
 class PercentageWidget(QWidget):
     pass
 class PixelsWidget(QWidget):
@@ -47,9 +85,9 @@ class CompressionSettingsWidget(QWidget):
         resize_layout = QVBoxLayout()
         parent_resize_widget.setLayout(resize_layout)
         
-        size_policy = QSizePolicy()
-        size_policy.setRetainSizeWhenHidden(True)
-        parent_resize_widget.setSizePolicy(size_policy)
+        retain_size_when_hidden_policy = QSizePolicy()
+        retain_size_when_hidden_policy.setRetainSizeWhenHidden(True)
+        parent_resize_widget.setSizePolicy(retain_size_when_hidden_policy)
         
         def resize_visiblility(should):
             if should == False:
@@ -62,47 +100,44 @@ class CompressionSettingsWidget(QWidget):
         # in percentage or pixels radio group
         per_or_pix_layout = QHBoxLayout()
         button_group = QButtonGroup()
+        self.button_group = button_group
         pixels_button = QRadioButton("Resize by Pixels")
-        percentage_button = QRadioButton("Resize by Percentage")
-        button_group.addButton(pixels_button, 1)
-        button_group.addButton(percentage_button, 2)
-        def percentage_button_clicked():
-            settings.should_resize_by_percentage = True
-        def pixel_button_clicked():
-            settings.should_resize_by_percentage = False
-        percentage_button.clicked.connect(percentage_button_clicked)
-        pixels_button.clicked.connect(pixel_button_clicked)
-        percentage_button.setChecked(settings.should_resize_by_percentage)
-        pixels_button.setChecked(not settings.should_resize_by_percentage)
-        self.percentage_button = percentage_button
-        
+        self.percentage_button = QRadioButton("Resize by Percentage")
+        button_group.addButton(pixels_button, 0)
         per_or_pix_layout.addWidget(pixels_button)
-        per_or_pix_layout.addWidget(percentage_button)
+        button_group.addButton(self.percentage_button, 1)
+        per_or_pix_layout.addWidget(self.percentage_button)
         resize_layout.addLayout(per_or_pix_layout)
+        
+        self.percentage_button.setChecked(settings.should_resize_by_percentage)
+        pixels_button.setChecked(not settings.should_resize_by_percentage)
 
         # resize by pixels widget
         pixels_widget = PixelsWidget()
         self.pixels_widget = pixels_widget
         resize_layout.addWidget(pixels_widget)
+        pixels_widget.setSizePolicy(retain_size_when_hidden_policy)
         
         # resize by percentage widget
         percentage_widget = PercentageWidget()
         self.percentage_widget = percentage_widget
         resize_layout.addWidget(percentage_widget)
+        percentage_widget.setSizePolicy(retain_size_when_hidden_policy)
         
-        # add functionality to radio buttons of hide or show
-        def toggle_pixels(checked):
-            if checked:
-                pixels_widget.show()
-                percentage_widget.hide()
-                return
-            pixels_widget.hide()
-            percentage_widget.show()
-        pixels_button.toggled.connect(toggle_pixels)
-        toggle_pixels(not settings.should_resize_by_percentage)
+        # setup radio group show/hide
+        radio_stacked_widget = QStackedWidget(self)
+        radio_stacked_widget.addWidget(pixels_widget)
+        radio_stacked_widget.addWidget(percentage_widget)
+        resize_layout.addWidget(radio_stacked_widget)
+        def on_button_clicked(index=0):
+            # Show the corresponding widget in the QStackedWidget when a button is clicked
+            radio_stacked_widget.setCurrentIndex(index)
+        button_group.idClicked.connect(on_button_clicked)
+        radio_stacked_widget.setCurrentIndex(settings.should_resize_by_percentage)
         
         layout.addWidget(parent_resize_widget)
         
+    
     def get_settings(self):
         compression_level = self.quality_input.value()
         use_percentage = self.percentage_button.isChecked()
@@ -111,17 +146,6 @@ class CompressionSettingsWidget(QWidget):
         max_width = self.pixels_widget.width_spinbox.value()
         
         return compression_level, use_percentage, resize_percentage, max_width, max_height
-    
-    # def compress_selected_files(self):
-    #     """Called when pressing the compress selected files button
-    #     """
-    #     if self.file_grid_scene is None or self.file_tile_list == []:
-    #         return
-        
-    #     selected_file_tiles = [tile for tile in self.file_tile_list if tile.highlight_tile is True]
-    #     if selected_file_tiles == []:
-    #         return
-    #     FileCompresser(selected_file_tiles, self.settings_dialog)
 
 class PercentageWidget(QWidget):
     """This widget will hold all the options if resizing by percentage

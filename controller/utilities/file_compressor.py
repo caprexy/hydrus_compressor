@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import QTableWidget , QSpinBox, QVBoxLayout,  QTableWidgetI
 from models.file_tile import FileTile
 from controller.utilities import hydrus_api_caller
 from controller import constants
-from view.input_function_widgets.file_compression_widgets import CompressionSettingsDialog
+from view.input_function_widgets.file_compression_widgets import CompressionSettingsWidget
 
 class FileCompresser(QDialog):
     """Compresses the files and displays all files being compressed and status information
@@ -23,7 +23,7 @@ class FileCompresser(QDialog):
     done_count = total_files = 0
     def __init__(self, 
                  file_tile_list:list[FileTile],
-                 settings_dialog:CompressionSettingsDialog):
+                 settings_dialog:CompressionSettingsWidget):
         """Get all things neede for file compression
 
         Args:

@@ -8,7 +8,11 @@ from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QPushButton, QDialog, QVBoxLayout, QWidget
 
 import models.settings as settings
+import view.popup_widgets as popup_widgets
 from controller.utilities import hydrus_api_caller
+
+from view.input_function_widgets.compress_file_panel_widget import CompressingFilePanel
+
 
 class InputController(QObject):
     """Class to define functions for the controller and to be used to be passed to the intercontroller comms
@@ -24,30 +28,8 @@ class InputController(QObject):
         try:
             settings.get_api_info()
         except ValueError as e:
-            self.warning(f"Couldnt get your info, check settings: {e}")
+            popup_widgets.warning(f"Couldnt get your info, check settings: {e}")
         
-    def warning(self, reason:str):
-        """Creates a warning popup with given reason
-
-        Args:
-            reason (str): Text to be put into warning box
-        """
-        warning_window = QDialog()
-        warning_window.setWindowTitle("Warning!!!!!")
-        warning_window_layout = QVBoxLayout()
-        warning_window.setLayout(warning_window_layout)
-
-
-        reason_label = QLabel(reason)
-        warning_window_layout.addWidget(reason_label)
-
-        close_button = QPushButton('Close', warning_window)
-        close_button.clicked.connect(warning_window.accept)
-        warning_window_layout.addWidget(close_button)
-        
-        warning_window.exec()
-        return warning_window
-
     def get_files_onclick(self, 
             max_file_size: int,
             size_type: str,
@@ -80,7 +62,7 @@ class InputController(QObject):
         try:
             hydrus_key, api_port = settings.get_api_info()
         except ValueError as e:
-            self.warning(str(e))
+            popup_widgets.warning(str(e))
             return
         
         if get_imgs:
@@ -94,16 +76,23 @@ class InputController(QObject):
         elif get_archive:
             tags_list.append("system:archive")
         if not get_imgs and not get_vids:
-            self.warning("Did not select any media to get")
+            popup_widgets.warning("Did not select any media to get")
             return
         if not get_inbox and not get_archive:
-            self.warning("Did not select inbox or archive")
+            popup_widgets.warning("Did not select inbox or archive")
             return
 
         # sets the file_metadata and emits signal for intercontroller_comm to pass to output controller
         api_files_metadata = hydrus_api_caller.get_filtered_files_metadata_from_api(tags_list)
         self.file_grid_view_controller.process_api_files_metadata(api_files_metadata, self.size_type)
         self.get_files_onclick_complete.emit()
+        
+    def set_compress_file_panel_widget(self, compress_file_panel_widget:CompressingFilePanel):
+        self.compress_file_panel_widget = compress_file_panel_widget
+        
+    def set_file_grid_view_controller(self, file_grid_view_controller):
+        self.file_grid_view_controller = file_grid_view_controller
+        self.compress_file_panel_widget.set_file_grid_view_controller(file_grid_view_controller)
         
     def open_config_menu(self):
         """Function to be called when making a popup for the config menu

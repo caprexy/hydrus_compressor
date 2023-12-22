@@ -49,7 +49,6 @@ class FileTileGridController(QWidget):
         # place tiles and add to scene
         for tile in self.file_tile_list:
             if tile.isVisible() is  False: #dont paint hidden tiles
-                print("invis")
                 continue
             tile.set_ordered_tiles(self.file_tile_list)
             tile.setPos(col * (self.tile_width) + (col+1)*width_pad, 
@@ -68,11 +67,12 @@ class FileTileGridController(QWidget):
     
     def get_selected_tiles(self):
         if self.parent_file_tile_grid_view.scene is None or self.file_tile_list == []:
-            return
+            return None
         
         selected_file_tiles = [tile for tile in self.file_tile_list if tile.highlight_tile is True]
         if selected_file_tiles == []:
-            return
+            return None
+        
         return selected_file_tiles
     
     

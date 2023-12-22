@@ -21,7 +21,7 @@ def connect_input_output(
     input_controller_obj = input_controller_obj_in
     output_controller_obj = output_controller_obj_in
     
-    input_controller_obj.file_grid_view_controller = file_grid_view.controller
+    input_controller_obj.set_file_grid_view_controller(file_grid_view.controller)
     input_controller_obj.get_files_onclick_complete.connect(file_grid_view.controller.build_file_table)
 
 def build_new_file_grid():

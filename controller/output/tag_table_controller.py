@@ -54,7 +54,6 @@ class TagTableController():
                 tile.show()
                 for tag in tags:
                     self.related_tag_counter[tag] += 1
-            print(tile.isVisible())
         
         self.build_tag_table(self.related_tag_counter, selected_tag)
         
